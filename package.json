@@ -2,6 +2,10 @@
   "name": "justlang-lsp",
   "displayName": "justlang-lsp",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/elasticdotventures/justlang-lsp.git"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.102.0"

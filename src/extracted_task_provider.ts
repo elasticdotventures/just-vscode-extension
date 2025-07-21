@@ -1,5 +1,6 @@
 import * as cp from 'child_process';
 import * as path from 'path';
+import { Uri } from 'vscode';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
@@ -8,13 +9,13 @@ export class JustTaskProvider implements vscode.TaskProvider {
   private justPromise: Thenable<vscode.Task[]> | undefined = undefined;
   private flakeExists?: boolean;
 
-  constructor(workspaceRoot: string) {
-    const pattern = path.join(workspaceRoot, 'justfile');
-    const fileWatcher = vscode.workspace.createFileSystemWatcher(pattern);
-    fileWatcher.onDidChange(() => this.justPromise = undefined);
-    fileWatcher.onDidCreate(() => this.justPromise = undefined);
-    fileWatcher.onDidDelete(() => this.justPromise = undefined);
-    flakeNixExists(workspaceRoot).then(x => this.flakeExists = x);
+  constructor(private workspaceRoot: string) {
+      const pattern = path.join(workspaceRoot, 'justfile');
+      const fileWatcher = vscode.workspace.createFileSystemWatcher(pattern);
+      fileWatcher.onDidChange(() => (this.justPromise = undefined));
+      fileWatcher.onDidCreate(() => (this.justPromise = undefined));
+      fileWatcher.onDidDelete(() => (this.justPromise = undefined));
+      flakeNixExists(workspaceRoot).then((exists) => (this.flakeExists = exists));
   }
 
   public provideTasks(): Thenable<vscode.Task[]> | undefined {
@@ -36,15 +37,26 @@ export class JustTaskProvider implements vscode.TaskProvider {
 }
 
 function exec(command: string, options: cp.ExecOptions): Promise<{ stdout: string; stderr: string }> {
-  return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
-    cp.exec(command, options, (error, stdout, stderr) => {
-      if (error) {
-        reject({ error, stdout, stderr });
-      }
-      resolve({ stdout, stderr });
+    return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        cp.exec(command, options, (error, stdout, stderr) => {
+            if (error) {
+                reject({ error, stdout, stderr });
+            }
+            resolve({ stdout, stderr });
+        });
     });
-  });
 }
+    new Promise((resolve, reject) => {
+        const command = 'exampleCommand';
+        const options = {};
+        cp.exec(command, options, (error: cp.ExecException | null, stdout: string | Buffer, stderr: string | Buffer) => {
+            if (error) {
+                reject({ error, stdout, stderr });
+            } else {
+                resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
+            }
+        });
+    });
 
 function getExecution(definition: JustTaskDefinition) {
   let baseCommand = getCommandLine(definition.task, definition.flakeExists);
@@ -134,18 +146,16 @@ async function getJustTasks(): Promise<vscode.Task[]> {
   return result;
 }
 
-async function flakeNixExists(folder: string): Promise<boolean> {
-  return await exists(path.join(folder, 'flake.nix'));
-}
+const flakeNixExists = async (folder: string): Promise<boolean> => fs.existsSync(path.join(folder, 'flake.nix'));
 
-async function exists(filePath: string): Promise<boolean> {
-  try {
-    await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
-    return true;
-  } catch {
-    return false;
-  }
-}
+const exists = async (filePath: string): Promise<boolean> => {
+    try {
+        await vscode.workspace.fs.stat(Uri.file(filePath));
+        return true;
+    } catch {
+        return false;
+    }
+};
 
 function getOutputChannel(): vscode.OutputChannel {
   if (!_channel) {
@@ -157,6 +167,7 @@ function getOutputChannel(): vscode.OutputChannel {
 let _channel: vscode.OutputChannel;
 
 interface JustTaskDefinition extends vscode.TaskDefinition {
+  type: string;
   task: string;
   dir: string;
   promptForArgs: boolean;
