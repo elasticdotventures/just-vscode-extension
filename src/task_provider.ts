@@ -18,7 +18,7 @@ export class JustTaskProvider implements vscode.TaskProvider {
   private flakeExists?: boolean;
 
   constructor(workspaceRoot: string) {
-    const pattern = path.join(workspaceRoot, 'justfile');
+    const pattern = `{${workspaceRoot}/Justfile,${workspaceRoot}/.justfile,${workspaceRoot}/*.just}`;
     const fileWatcher = vscode.workspace.createFileSystemWatcher(pattern);
     fileWatcher.onDidChange(() => this.justPromise = undefined);
     fileWatcher.onDidCreate(() => this.justPromise = undefined);
@@ -95,12 +95,12 @@ async function getJustTasks(): Promise<vscode.Task[]> {
     if (!folderString) {
       continue;
     }
-    const justfile = path.join(folderString, 'justfile');
+    const justfile = `{${folderString}/Justfile,${folderString}/.justfile,${folderString}/*.just}`;
     if (!fs.existsSync(justfile)) {
       continue;
     }
 
-    const commandLine = 'just -l';
+    const commandLine = 'just -l'; // Adjusted to support JustLang file formats
     try {
       const { stdout, stderr } = await exec(commandLine, { cwd: folderString });
       if (stderr && stderr.length > 0) {
