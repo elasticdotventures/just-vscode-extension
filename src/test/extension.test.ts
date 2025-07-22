@@ -1,86 +1,75 @@
-import * as assert from 'assert';
+// Attribution: Portions of this file are derived from the `vscode-syntax-highlighting-just` repository.
+// Repository URL: https://codeberg.org/wolfmah/vscode-syntax-highlighting-just/
 
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
-import * as vscode from 'vscode';
-import { JustTaskProvider } from '../task_provider';
-import { activate } from '../extension';
-// import * as myExtension from '../../extension';
+const assert = require('assert');
+const vscode = require('vscode');
+const { JustTaskProvider } = require('../task_provider');
+const { activate } = require('../extension');
 
-suite('Extension Test Suite', () => {
+describe('Extension Test Suite', () => {
+    it('Language Configuration', async () => {
+        const config = vscode.workspace.getConfiguration('just');
+        assert.ok(config, 'Language configuration for JustLang should be available');
+        console.log('Language Configuration:', JSON.stringify(config, null, 2));
+        assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
+        assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
+    });
 
-	// Test language configuration for JustLang files
-	test('Language Configuration', async () => {
-		const config = vscode.workspace.getConfiguration('just');
-		assert.ok(config, 'Language configuration for JustLang should be available');
-		console.log('Language Configuration:', JSON.stringify(config, null, 2));
-		assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
-		assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
-	});
+    it('Task Provider Registration', () => {
+        let workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceRoot) {
+            const tempWorkspaceRoot = '/tmp/test-workspace';
+            try {
+                require('fs').mkdirSync(tempWorkspaceRoot, { recursive: true });
+                console.log(`Temporary workspace root created at ${tempWorkspaceRoot}`);
+                workspaceRoot = tempWorkspaceRoot;
+            } catch (error) {
+                throw new Error('Failed to create a temporary workspace root for testing.');
+            }
+        }
+        assert.ok(workspaceRoot, 'Workspace root should exist');
 
+        const taskProvider = new JustTaskProvider(workspaceRoot!);
+        const disposableTaskProvider = vscode.tasks.registerTaskProvider(JustTaskProvider.JustType, taskProvider);
+        assert.ok(disposableTaskProvider, 'Task provider should be registered');
+    });
 
-	vscode.window.showInformationMessage('Start all tests.');
+    it('Command Registration', () => {
+        const context = {
+            subscriptions: [],
+            workspaceState: {} as any,
+            globalState: {} as any,
+            extensionUri: vscode.Uri.file(''),
+            extensionPath: '',
+            environmentVariableCollection: {} as any,
+            storageUri: vscode.Uri.file(''),
+            globalStorageUri: vscode.Uri.file(''),
+            logUri: vscode.Uri.file(''),
+            secrets: {} as any,
+            extensionMode: vscode.ExtensionMode.Test,
+            extension: {} as any,
+            asAbsolutePath: (path: string) => path,
+            storagePath: '',
+            globalStoragePath: '',
+            logPath: '',
+            languageModelAccessInformation: {} as any
+        };
 
-	test('Task Provider Registration', () => {
-	    let workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-	    if (!workspaceRoot) {
-	        const tempWorkspaceRoot = '/tmp/test-workspace';
-	        try {
-	            require('fs').mkdirSync(tempWorkspaceRoot, { recursive: true });
-	            console.log(`Temporary workspace root created at ${tempWorkspaceRoot}`);
-	            workspaceRoot = tempWorkspaceRoot;
-	        } catch (error) {
-	            throw new Error('Failed to create a temporary workspace root for testing.');
-	        }
-	    }
-	    assert.ok(workspaceRoot, 'Workspace root should exist');
-	
-	    const taskProvider = new JustTaskProvider(workspaceRoot!);
-	    const disposableTaskProvider = vscode.tasks.registerTaskProvider(JustTaskProvider.JustType, taskProvider);
-	    assert.ok(disposableTaskProvider, 'Task provider should be registered');
-	});
-	
-	test('Command Registration', () => {
-	    const context: vscode.ExtensionContext = {
-	        subscriptions: [],
-	        workspaceState: {} as any,
-	        globalState: {} as any,
-	        extensionUri: vscode.Uri.file(''),
-	        extensionPath: '',
-	        environmentVariableCollection: {} as any,
-	        storageUri: vscode.Uri.file(''),
-	        globalStorageUri: vscode.Uri.file(''),
-	        logUri: vscode.Uri.file(''),
-	        secrets: {} as any,
-	        extensionMode: vscode.ExtensionMode.Test,
-	        extension: {} as any,
-	        asAbsolutePath: (path: string) => path,
-	        storagePath: '',
-	        globalStoragePath: '',
-	        logPath: '',
-	        languageModelAccessInformation: {} as any
-	    };
-	
-	    activate(context);
-	    const command = vscode.commands.getCommands(true).then(commands => commands.includes('justlang-lsp.helloWorld'));
-	    assert.ok(command, 'Command should be registered');
-	});
-		vscode.commands.getCommands(true).then(commands => {
-		    assert.ok(commands.includes('justlang-lsp.helloWorld'), 'Command should be registered');
-		});
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
-// Test syntax highlighting for JustLang files
-test('Syntax Highlighting', async () => {
-    const grammar = await vscode.languages.getLanguages().then(languages => languages.includes('just'));
-    assert.ok(grammar, 'JustLang syntax highlighting should be available');
+        activate(context);
+        const command = vscode.commands.getCommands(true).then((commands: string[]) => commands.includes('justlang-lsp.helloWorld'));
+        assert.ok(command, 'Command should be registered');
+    });
+
+    it('Syntax Highlighting', async () => {
+        const grammar = await vscode.languages.getLanguages().then((languages: string[]) => languages.includes('just'));
+        assert.ok(grammar, 'JustLang syntax highlighting should be available');
+    });
+
+    it('Language Configuration File Accessibility', async () => {
+        const fs = require('fs');
+        const path = require('path');
+        const configPath = path.resolve(__dirname, '../../language-configuration.json');
+        const fileExists = fs.existsSync(configPath);
+        assert.ok(fileExists, 'Language configuration file should be accessible');
+    });
 });
-
-// Test to ensure language configuration file is accessible
-test('Language Configuration File Accessibility', async () => {
-    const fs = require('fs');
-    const path = require('path');
-    const configPath = path.resolve(__dirname, '../../language-configuration.json');
-    const fileExists = fs.existsSync(configPath);
-    assert.ok(fileExists, 'Language configuration file should be accessible');
-});
-	});

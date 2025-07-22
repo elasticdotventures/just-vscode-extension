@@ -16,8 +16,10 @@ build:
 
 # Test the VSCode extension
 test:
-    # this will appear on operators screen (useful for debugging)
+    # Upgrade everything to TypeScript and precompile tests
     just build
+    pnpm run compile-tests || (echo "Precompiled tests failed. Skipping extension host tests." && exit 1)
+    # Run extension host tests only if precompiled tests pass
     just package
     export DISPLAY={{DISPLAY}} && pnpm run test
 
