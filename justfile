@@ -12,23 +12,39 @@ run-debug-extension:
 # Build the VSCode extension
 build:
     . $HOME/.nvm/nvm.sh
-    pnpm install
     pnpm run compile
 
 # Test the VSCode extension
 test:
     # this will appear on operators screen (useful for debugging)
+    just build
     just package
-    just install
     export DISPLAY={{DISPLAY}} && pnpm run test
 
 # Package the VSCode extension into a .vsix file
 package:
     . $HOME/.nvm/nvm.sh
     pnpm run compile
-    pnpm install -g @vscode/vsce
+    # pnpm install -g @vscode/vsce
     vsce package
+    @just package-check
+
+
+package-check:
+    #!/bin/bash
+    # check if the extension file is less than 1 minute old using {{EXT_VER}}
+    FILENAME="./justlang-lsp-{{EXT_VER}}.vsix"
+    if [ -f "$FILENAME" ] && [ $(($(date +%s) - $(stat -c %Y "$FILENAME"))) -lt 60 ]; then \
+        echo "👍🏻 file $FILENAME"
+    else \
+        echo "😭 file $FILENAME missing or too old"; \
+    fi  
+
 
 # Install the VSCode extension
 install:
-    {{VSCODE}} --install-extension ./vscode-just-lsp-*.vsix
+    pnpm install
+
+package-install:
+    {{VSCODE}} --install-extension ./justlang-lsp-{{EXT_VER}}.vsix
+
