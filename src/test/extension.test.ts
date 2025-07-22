@@ -8,12 +8,17 @@ import { activate } from '../extension';
 // import * as myExtension from '../../extension';
 
 suite('Extension Test Suite', () => {
-    test('Language Configuration', async () => {
-        const config = vscode.workspace.getConfiguration('just');
-        assert.ok(config, 'Language configuration for JustLang should be available');
-        assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
-        assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
-    });
+
+	// Test language configuration for JustLang files
+	test('Language Configuration', async () => {
+		const config = vscode.workspace.getConfiguration('just');
+		assert.ok(config, 'Language configuration for JustLang should be available');
+		console.log('Language Configuration:', JSON.stringify(config, null, 2));
+		assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
+		assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
+	});
+
+
 	vscode.window.showInformationMessage('Start all tests.');
 
 	test('Task Provider Registration', () => {
@@ -70,11 +75,12 @@ test('Syntax Highlighting', async () => {
     assert.ok(grammar, 'JustLang syntax highlighting should be available');
 });
 
-// Test language configuration for JustLang files
-test('Language Configuration', async () => {
-    const config = vscode.workspace.getConfiguration('just');
-    assert.ok(config, 'Language configuration for JustLang should be available');
-    assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
-    assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
+// Test to ensure language configuration file is accessible
+test('Language Configuration File Accessibility', async () => {
+    const fs = require('fs');
+    const path = require('path');
+    const configPath = path.resolve(__dirname, '../../language-configuration.json');
+    const fileExists = fs.existsSync(configPath);
+    assert.ok(fileExists, 'Language configuration file should be accessible');
 });
 	});
