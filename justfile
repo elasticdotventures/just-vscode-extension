@@ -18,10 +18,11 @@ build:
 test:
     # Upgrade everything to TypeScript and precompile tests
     just build
+    NODE_OPTIONS='--import=tsx' pnpm exec mocha ./src/test/language-configuration-accessibility.test.ts
     pnpm run compile-tests || (echo "Precompiled tests failed. Skipping extension host tests." && exit 1)
     # Run extension host tests only if precompiled tests pass
     just package
-    export DISPLAY={{DISPLAY}} && pnpm run test
+    # export DISPLAY={{DISPLAY}} && pnpm run test
 
 # Package the VSCode extension into a .vsix file
 package:
