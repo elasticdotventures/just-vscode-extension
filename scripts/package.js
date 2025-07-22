@@ -26,6 +26,7 @@ try {
 
     const prodPkg = {
         name: pkg.name,
+        publisher: pkg.publisher,
         displayName: pkg.displayName,
         description: pkg.description,
         repository: pkg.repository,

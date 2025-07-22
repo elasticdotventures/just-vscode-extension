@@ -36,6 +36,7 @@ async function main() {
 		platform: 'node',
 		outfile: 'dist/extension.js',
 		external: ['vscode'],
+		mainFields: ['module', 'main'],
 		logLevel: 'silent',
 		plugins: [
 			/* add to the end of plugins array */

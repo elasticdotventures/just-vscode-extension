@@ -1,5 +1,6 @@
 {
   "name": "justlang-lsp",
+  "publisher": "promptexecution",
   "displayName": "justlang-lsp",
   "description": "",
   "repository": {
@@ -13,7 +14,7 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": ["onLanguage:just"],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [

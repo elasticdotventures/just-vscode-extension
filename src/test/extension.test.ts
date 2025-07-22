@@ -2,24 +2,50 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import 'mocha';
 
-describe('Extension Test Suite', () => {
+// --- WorkspaceFolders fixture setup ---
+before(() => {
+    // Mock a workspace folder for extension activation using Object.defineProperty
+    const mockWorkspaceFolder = {
+        uri: { fsPath: '/tmp/test-workspace', path: '/tmp/test-workspace' },
+        name: 'test-workspace',
+        index: 0
+    };
+    Object.defineProperty(vscode.workspace, 'workspaceFolders', {
+        get: () => [mockWorkspaceFolder],
+        configurable: true
+    });
+    console.log('[justlang-lsp test] workspaceFolders fixture set:', vscode.workspace.workspaceFolders);
+});
+
+describe('😉 Extension Test Suite', () => {
     it('Extension should be active', async () => {
-        const extension = vscode.extensions.getExtension('justlang-lsp.justlang-lsp');
-        assert.ok(extension, 'Extension should be found');
+        // DEBUG: If you see this message in test output, extension.test.ts is running!
+        console.log("DEBUG: extension.test.ts loaded and running");
+
+        // Log all installed extension IDs for debugging
+        const allExts = vscode.extensions.all.map(e => e.id);
+        console.log("Installed extensions:", allExts);
+
+        const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
+        if (!extension) {
+            const allExtsStr = vscode.extensions.all.map(e => e.id).join(", ");
+            assert.fail(`Extension not found. Installed extensions: ${allExtsStr}`);
+        }
         await extension.activate();
         assert.ok(extension.isActive, 'Extension should be active');
     });
 
     it('Task provider should be registered', async () => {
-        const extension = vscode.extensions.getExtension('justlang-lsp.justlang-lsp');
-        assert.ok(extension, 'Extension should be found');
-        await extension.activate();
-        const tasks = await vscode.tasks.fetchTasks({ type: 'just' });
-        assert.ok(tasks.length > 0, 'Task provider should be registered and find tasks');
-    });
+            console.log('[justlang-lsp test] workspaceFolders:', vscode.workspace.workspaceFolders);
+            const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
+            assert.ok(extension, 'Extension should be found');
+            await extension.activate();
+            const tasks = await vscode.tasks.fetchTasks({ type: 'just' });
+            assert.ok(tasks.length > 0, 'Task provider should be registered and find tasks');
+        });
 
     it('Language configuration should be set', async () => {
-        const extension = vscode.extensions.getExtension('justlang-lsp.justlang-lsp');
+        const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
         assert.ok(extension, 'Extension should be found');
         await extension.activate();
         const languages = await vscode.languages.getLanguages();

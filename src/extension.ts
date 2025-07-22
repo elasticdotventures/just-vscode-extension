@@ -18,11 +18,16 @@ function loadLanguageConfiguration(context: vscode.ExtensionContext): vscode.Lan
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    console.log('[justlang-lsp] Extension activation started');
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (workspaceRoot) {
+        console.log(`[justlang-lsp] Registering JustTaskProvider for workspaceRoot: ${workspaceRoot}`);
         const taskProvider = new JustTaskProvider(workspaceRoot);
         const disposableTaskProvider = vscode.tasks.registerTaskProvider(JustTaskProvider.JustType, taskProvider);
         context.subscriptions.push(disposableTaskProvider);
+        console.log('[justlang-lsp] JustTaskProvider registered');
+    } else {
+        console.warn('[justlang-lsp] No workspaceRoot found, JustTaskProvider not registered');
     }
 
     // Load language configuration from language-configuration.json
@@ -54,10 +59,14 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "justlang-lsp" is now active!');
 
+    console.log('[justlang-lsp] Creating language client...');
     client = createLanguageClient(context);
 
     if (client) {
+        console.log('[justlang-lsp] Language client created, starting...');
         client.start();
+    } else {
+        console.error('[justlang-lsp] Language client creation failed (client is null)');
     }
 }
 
