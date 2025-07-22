@@ -4,7 +4,7 @@ import 'mocha';
 
 describe('Language Client', () => {
     it('Should create the language client', async () => {
-        const extension = vscode.extensions.getExtension('justlang-lsp.justlang-lsp');
+        const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
         assert.ok(extension, 'Extension should be found');
         await extension.activate();
 

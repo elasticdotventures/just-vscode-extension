@@ -38,11 +38,11 @@ before(() => {
 describe('😉 Extension Test Suite', () => {
     it('Extension should be active', async () => {
         // DEBUG: If you see this message in test output, extension.test.ts is running!
-        console.log("DEBUG: extension.test.ts loaded and running");
+        // console.log("DEBUG: extension.test.ts loaded and running");
 
         // Log all installed extension IDs for debugging
         const allExts = vscode.extensions.all.map(e => e.id);
-        console.log("Installed extensions:", allExts);
+        // console.log("Installed extensions:", allExts);
 
         const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
         if (!extension) {
@@ -58,6 +58,10 @@ describe('😉 Extension Test Suite', () => {
             const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
             assert.ok(extension, 'Extension should be found');
             await extension.activate();
+            
+            // Add delay to allow task provider to register and discover tasks
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            
             const tasks = await vscode.tasks.fetchTasks({ type: 'just' });
             assert.ok(tasks.length > 0, 'Task provider should be registered and find tasks');
         });

@@ -18,16 +18,16 @@ function loadLanguageConfiguration(context: vscode.ExtensionContext): vscode.Lan
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    console.log('[justlang-lsp] Extension activation started');
+    // console.log('[justlang-lsp] Extension activation started');
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (workspaceRoot) {
-        console.log(`[justlang-lsp] Registering JustTaskProvider for workspaceRoot: ${workspaceRoot}`);
+        // console.log(`[justlang-lsp] Registering JustTaskProvider for workspaceRoot: ${workspaceRoot}`);
         const taskProvider = new JustTaskProvider(workspaceRoot);
         const disposableTaskProvider = vscode.tasks.registerTaskProvider(JustTaskProvider.JustType, taskProvider);
         context.subscriptions.push(disposableTaskProvider);
-        console.log('[justlang-lsp] JustTaskProvider registered');
+        // console.log('[justlang-lsp] JustTaskProvider registered');
     } else {
-        console.warn('[justlang-lsp] No workspaceRoot found, JustTaskProvider not registered');
+        // console.warn('[justlang-lsp] No workspaceRoot found, JustTaskProvider not registered');
     }
 
     // Load language configuration from language-configuration.json
@@ -61,12 +61,33 @@ export function activate(context: vscode.ExtensionContext) {
 
     console.log('[justlang-lsp] Creating language client...');
     client = createLanguageClient(context);
-
+    
     if (client) {
         console.log('[justlang-lsp] Language client created, starting...');
-        client.start();
+        // Start the client and log before/after
+        const startPromise = client.start();
+        console.log('[justlang-lsp] client.start() called, waiting for server to become ready...');
+        // Set a timeout to check if the client is ready after 10 seconds
+        setTimeout(() => {
+            if (client && client.isRunning()) {
+                console.log('[justlang-lsp] Language client is running.');
+            } else {
+                console.error('[justlang-lsp] Language client did not become ready within 10 seconds (timeout).');
+                vscode.window.showErrorMessage('justlang-lsp language server startup timed out.');
+            }
+        }, 10000);
+        // Optionally, log when the client is ready (if LanguageClient exposes an onReady promise)
+        if (startPromise && typeof startPromise.then === 'function') {
+            startPromise.then(() => {
+                console.log('[justlang-lsp] Language client started successfully.');
+            }).catch((err: unknown) => {
+                console.error('[justlang-lsp] Language client failed to start:', err instanceof Error ? err.message : String(err));
+                vscode.window.showErrorMessage('justlang-lsp language client failed to start.');
+            });
+        }
     } else {
         console.error('[justlang-lsp] Language client creation failed (client is null)');
+        vscode.window.showErrorMessage('justlang-lsp language client creation failed.');
     }
 }
 
