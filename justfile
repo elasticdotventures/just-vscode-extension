@@ -22,14 +22,15 @@ test:
     pnpm run compile-tests || (echo "Precompiled tests failed. Skipping extension host tests." && exit 1)
     # Run extension host tests only if precompiled tests pass
     just package
-    # export DISPLAY={{DISPLAY}} && pnpm run test
+    export DISPLAY={{DISPLAY}} && pnpm run test
 
 # Package the VSCode extension into a .vsix file
 package:
     . $HOME/.nvm/nvm.sh
     pnpm run compile
     # pnpm install -g @vscode/vsce
-    pnpm exec vsce package
+    # NOTE: -- no-dependencies is important to avoid packaging dev dependencies
+    pnpm exec vsce package --no-dependencies --out justlang-lsp-{{EXT_VER}}.vsix
     @just package-check
 
 
@@ -42,6 +43,7 @@ package-check:
     else \
         echo "😭 file $FILENAME missing or too old"; \
     fi  
+
 
 package-inspect:
     unzip justlang-lsp-{{EXT_VER}}.vsix -d vsix-content
