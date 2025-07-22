@@ -8,11 +8,19 @@ const { activate } = require('../extension');
 
 describe('Extension Test Suite', () => {
     it('Language Configuration', async () => {
-        const config = vscode.workspace.getConfiguration('just');
-        assert.ok(config, 'Language configuration for JustLang should be available');
+        // Test that the language is registered
+        const languages = await vscode.languages.getLanguages();
+        assert.ok(languages.includes('just'), 'Just language should be registered');
         
-        console.log('Language Configuration:', JSON.stringify(config, null, 2));
-        assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
+        // Test language configuration by reading the actual file
+        const fs = require('fs');
+        const path = require('path');
+        const configPath = path.resolve(__dirname, '../../language-configuration.json');
+        const { loadCommentedJson } = require('../utils/json-loader');
+        const config = loadCommentedJson(configPath);
+        
+        // console.log('Language Configuration:', JSON.stringify(config, null, 2));
+        assert.strictEqual(config.comments.lineComment, '#', 'Line comment should be "#"');
         assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
     });
 
