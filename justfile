@@ -28,7 +28,7 @@ package:
     . $HOME/.nvm/nvm.sh
     pnpm run compile
     # pnpm install -g @vscode/vsce
-    vsce package
+    pnpm exec vsce package
     @just package-check
 
 
@@ -41,6 +41,11 @@ package-check:
     else \
         echo "😭 file $FILENAME missing or too old"; \
     fi  
+
+package-inspect:
+    unzip justlang-lsp-{{EXT_VER}}.vsix -d vsix-content
+    tree vsix-content
+    @echo "🤔 remember to cleanup ./vsix-content when finished"
 
 
 # Install the VSCode extension
