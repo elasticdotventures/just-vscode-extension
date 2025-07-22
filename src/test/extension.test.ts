@@ -8,6 +8,12 @@ import { activate } from '../extension';
 // import * as myExtension from '../../extension';
 
 suite('Extension Test Suite', () => {
+    test('Language Configuration', async () => {
+        const config = vscode.workspace.getConfiguration('just');
+        assert.ok(config, 'Language configuration for JustLang should be available');
+        assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
+        assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
+    });
 	vscode.window.showInformationMessage('Start all tests.');
 
 	test('Task Provider Registration', () => {
@@ -58,4 +64,17 @@ suite('Extension Test Suite', () => {
 		    assert.ok(commands.includes('justlang-lsp.helloWorld'), 'Command should be registered');
 		});
 		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+// Test syntax highlighting for JustLang files
+test('Syntax Highlighting', async () => {
+    const grammar = await vscode.languages.getLanguages().then(languages => languages.includes('just'));
+    assert.ok(grammar, 'JustLang syntax highlighting should be available');
+});
+
+// Test language configuration for JustLang files
+test('Language Configuration', async () => {
+    const config = vscode.workspace.getConfiguration('just');
+    assert.ok(config, 'Language configuration for JustLang should be available');
+    assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
+    assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');
+});
 	});

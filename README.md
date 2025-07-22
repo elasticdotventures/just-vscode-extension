@@ -7,6 +7,8 @@ JustLang-LSP is a Visual Studio Code extension designed to enhance the developme
 - **Task Provider Integration**: Automatically detects and registers tasks from JustLang files (`Justfile`, `.justfile`, or `*.just`).
 - **Command Registration**: Includes a sample command (`justlang-lsp.helloWorld`) for demonstration purposes.
 - **Compatibility**: Ensures proper integration with VS Code's command and subscription mechanisms.
+- **Syntax Highlighting**: Provides syntax highlighting for JustLang files using TextMate grammar (`syntaxes/just.tmLanguage.yaml`).
+- **Language Configuration**: Adds language configuration for JustLang files (`language-configuration.json`), including comments, brackets, and auto-closing pairs.
 
 ## Implementation Summary
 ### Refactoring
@@ -49,3 +51,10 @@ Run `npm test` to execute the test suite.
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+### Attribution
+Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
+
+## Thanks
+* skellock
+* 

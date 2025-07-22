@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/elasticdotventures/justlang-lsp.git"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.102.0"
   },
@@ -16,13 +16,28 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "justlang-lsp.helloWorld",
-        "title": "Hello World"
-      }
-    ]
-  },
+      "commands": [
+        {
+          "command": "justlang-lsp.helloWorld",
+          "title": "Hello World"
+        }
+      ],
+      "languages": [
+        {
+          "id": "just",
+          "aliases": ["Just"],
+          "extensions": [".justfile", ".just"],
+          "configuration": "./language-configuration.json"
+        }
+      ],
+      "grammars": [
+        {
+          "language": "just",
+          "scopeName": "source.just",
+          "path": "./syntaxes/just.tmLanguage.yaml"
+        }
+      ]
+    },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
     "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",

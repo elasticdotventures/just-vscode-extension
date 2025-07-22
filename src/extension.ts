@@ -13,6 +13,21 @@ export function activate(context: vscode.ExtensionContext) {
         context.subscriptions.push(disposableTaskProvider);
     }
 
+    // Register syntax highlighting and language configuration for Just files
+    vscode.languages.setLanguageConfiguration('just', {
+        comments: {
+            lineComment: '#',
+        },
+        brackets: [['(', ')']],
+        autoClosingPairs: [
+            { open: '{', close: '}' },
+            { open: '[', close: ']' },
+            { open: '(', close: ')' },
+            { open: '"', close: '"' },
+            { open: "'", close: "'" },
+        ],
+    });
+
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "justlang-lsp" is now active!');
