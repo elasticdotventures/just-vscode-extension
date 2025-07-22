@@ -43,7 +43,7 @@
       "syntaxes",
       "language-configuration.json",
       "package.json"
-    ],    
+    ],
     "grammars": [
       {
         "language": "just",
@@ -73,7 +73,7 @@
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "mocha --loader tsx --recursive ./src/test/**/*.test.ts"
+    "test": "NODE_OPTIONS='--import=tsx' mocha --recursive ./src/test/**/*.test.ts"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -91,5 +91,7 @@
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
+  }
 }
