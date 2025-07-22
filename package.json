@@ -58,7 +58,18 @@
           "meta.embedded.block.shellscript": "shellscript"
         }
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Just Language Server",
+      "properties": {
+        "justlang-lsp.server.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the just-lsp executable. If not specified, it will be searched for in the system PATH."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
@@ -110,6 +121,7 @@
     "rimraf": "^6.0.1",
     "title-case": "^4.3.2",
     "unist-util-visit": "^5.0.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vscode-languageclient": "^9.0.1"
   }
 }

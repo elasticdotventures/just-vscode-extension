@@ -3,43 +3,34 @@
 ## Overview
 JustLang-LSP is a Visual Studio Code extension designed to enhance the development experience by providing task automation and integration with JustLang syntax. It supports `Justfile` (any capitalization), `.justfile`, and `*.just` formats. This extension leverages the VS Code API to register commands and task providers, enabling seamless execution of tasks defined in JustLang files.
 
+This extension now includes a language client for the `just-lsp` language server, providing features like completion, diagnostics, and more.
+
 ## Features
+- **Language Server Integration**: Connects to the `just-lsp` language server for advanced language features.
 - **Task Provider Integration**: Automatically detects and registers tasks from JustLang files (`Justfile`, `.justfile`, or `*.just`).
 - **Command Registration**: Includes a sample command (`justlang-lsp.helloWorld`) for demonstration purposes.
 - **Compatibility**: Ensures proper integration with VS Code's command and subscription mechanisms.
 - **Syntax Highlighting**: Provides syntax highlighting for JustLang files using TextMate grammar (`syntaxes/just.tmLanguage.yaml`).
 - **Language Configuration**: Adds language configuration for JustLang files (`language-configuration.json`), including comments, brackets, and auto-closing pairs.
 
-## Implementation Summary
-### Refactoring
-The logic for task detection and execution was refactored into `src/extracted_task_provider.ts`:
-- Updated to ESNext syntax for modern JavaScript/TypeScript standards.
-- Ensured compliance with ESLint rules for code quality.
+## Requirements
 
-### Activation Logic
-The task provider was integrated into the extension's activation logic (`src/extension.ts`):
-- Registered the `JustTaskProvider` to detect tasks from `justfile`.
-- Added the task provider to the extension's subscriptions for proper cleanup.
+This extension requires the `just-lsp` language server to be installed on your system. You can install it by following the instructions in the [just-lsp repository](https://github.com/your-repo/just-lsp).
 
-### Compatibility
-Verified compatibility with existing command registration and subscriptions:
-- Ensured no conflicts between the task provider and the `justlang-lsp.helloWorld` command.
-
-### Testing
-Thoroughly tested the integration:
-- Added unit tests in `src/test/extension.test.ts` to validate task provider registration and command functionality.
-- Fixed issues related to mock `ExtensionContext` and syntax errors.
+Once installed, you can either add the `just-lsp` executable to your system's `PATH` or specify the path to the executable in your VS Code settings using the `justlang-lsp.server.path` setting.
 
 ## How to Use
 1. Install the extension in Visual Studio Code.
-2. Open a workspace containing a JustLang file (`Justfile`, `.justfile`, or `*.just`).
-3. Run tasks directly from the VS Code task interface.
+2. Install the `just-lsp` language server.
+3. Open a workspace containing a JustLang file (`Justfile`, `.justfile`, or `*.just`).
+4. Run tasks directly from the VS Code task interface.
 
 ## Development
 ### Prerequisites
 - Node.js
 - TypeScript
 - PNPM
+- Rust and Cargo
 
 ### Setup
 1. Clone the repository.
