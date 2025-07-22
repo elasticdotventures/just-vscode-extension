@@ -10,6 +10,7 @@ describe('Extension Test Suite', () => {
     it('Language Configuration', async () => {
         const config = vscode.workspace.getConfiguration('just');
         assert.ok(config, 'Language configuration for JustLang should be available');
+        
         console.log('Language Configuration:', JSON.stringify(config, null, 2));
         assert.strictEqual(config.comments?.lineComment, '#', 'Line comment should be "#"');
         assert.deepStrictEqual(config.brackets, [['(', ')']], 'Brackets should include parentheses');

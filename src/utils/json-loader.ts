@@ -6,7 +6,11 @@ import { parse } from 'jsonc-parser';
  */
 export function loadCommentedJson(filePath: string): any {
     const content = fs.readFileSync(filePath, 'utf8');
-    return parse(content);
+    const result = parse(content);
+    if (result === undefined) {
+        throw new Error('Invalid JSON format');
+    }
+    return result;
 }
 
 /**
@@ -16,7 +20,6 @@ export function loadCommentedJsonSafe(filePath: string): any | null {
     try {
         return loadCommentedJson(filePath);
     } catch (error) {
-        console.error(`Failed to load JSON file ${filePath}:`, error);
         return null;
     }
 }

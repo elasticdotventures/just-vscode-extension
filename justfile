@@ -14,6 +14,9 @@ build:
     . $HOME/.nvm/nvm.sh
     pnpm run compile
 
+package-clean:
+    rm -rf out && pnpm run compile-tests  
+
 # Test the VSCode extension
 test:
     # Upgrade everything to TypeScript and precompile tests
