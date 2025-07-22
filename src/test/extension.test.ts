@@ -3,6 +3,9 @@ import * as vscode from 'vscode';
 import 'mocha';
 
 // --- WorkspaceFolders fixture setup ---
+import * as fs from 'fs';
+import * as path from 'path';
+
 before(() => {
     // Mock a workspace folder for extension activation using Object.defineProperty
     const mockWorkspaceFolder = {
@@ -15,6 +18,21 @@ before(() => {
         configurable: true
     });
     console.log('[justlang-lsp test] workspaceFolders fixture set:', vscode.workspace.workspaceFolders);
+
+    // Ensure /tmp/test-workspace exists
+    if (!fs.existsSync('/tmp/test-workspace')) {
+        fs.mkdirSync('/tmp/test-workspace', { recursive: true });
+    }
+
+    // Copy justfile from extension root to workspace
+    const sourceJustfile = path.join(__dirname, '../../justfile');
+    const destJustfile = path.join('/tmp/test-workspace', 'Justfile');
+    if (fs.existsSync(sourceJustfile)) {
+        fs.copyFileSync(sourceJustfile, destJustfile);
+        console.log(`[justlang-lsp test] Copied Justfile to workspace: ${destJustfile}`);
+    } else {
+        console.warn(`[justlang-lsp test] Source Justfile not found: ${sourceJustfile}`);
+    }
 });
 
 describe('😉 Extension Test Suite', () => {

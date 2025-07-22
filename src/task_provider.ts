@@ -95,14 +95,20 @@ async function getJustTasks(): Promise<vscode.Task[]> {
     if (!folderString) {
       continue;
     }
-    const justfile = `{${folderString}/Justfile,${folderString}/.justfile,${folderString}/*.just}`;
-    if (!fs.existsSync(justfile)) {
+    const justfile = path.join(folderString, 'Justfile');
+    console.log(`[justlang-lsp debug] Checking for Justfile at: ${justfile}`);
+    const justfileExists = fs.existsSync(justfile);
+    console.log(`[justlang-lsp debug] Justfile exists: ${justfileExists}`);
+    if (!justfileExists) {
       continue;
     }
 
     const commandLine = 'just -l'; // Adjusted to support JustLang file formats
     try {
+      console.log(`[justlang-lsp debug] Executing command: ${commandLine} in cwd: ${folderString}`);
       const { stdout, stderr } = await exec(commandLine, { cwd: folderString });
+      console.log(`[justlang-lsp debug] just -l stdout:\n${stdout}`);
+      console.log(`[justlang-lsp debug] just -l stderr:\n${stderr}`);
       if (stderr && stderr.length > 0) {
         getOutputChannel().appendLine(stderr);
         getOutputChannel().show(true);
@@ -125,10 +131,17 @@ async function getJustTasks(): Promise<vscode.Task[]> {
           };
           const task = new vscode.Task(definition, workspaceFolder, taskName, 'just', getExecution(definition));
           task.detail = taskDetail;
+          console.log(`[justlang-lsp debug] Creating task:`, {
+            name: taskName,
+            type: definition.type,
+            detail: taskDetail,
+            definition
+          });
           result.push(task);
         }
       }
     } catch (err: any) {
+      console.error(`[justlang-lsp debug] Error executing just -l:`, err);
       const channel = getOutputChannel();
       if (err.stderr) {
         channel.appendLine(err.stderr);
