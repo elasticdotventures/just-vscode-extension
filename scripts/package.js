@@ -49,6 +49,7 @@ try {
     // Copy essential files for VSCode extension
     const filesToCopy = [
         'dist',
+        'icons',
         'syntaxes', 
         'language-configuration.json',
         'justfile',
