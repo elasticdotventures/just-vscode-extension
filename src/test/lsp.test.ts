@@ -80,10 +80,10 @@ before(() => {
         assert.ok(shellSupported, 'shellExecution should be supported in this environment');
     });
 
-describe('😉 Extension Test Suite', () => {
-    it('Extension should be active', async () => {
-        // DEBUG: If you see this message in test output, extension.test.ts is running!
-        // console.log("DEBUG: extension.test.ts loaded and running");
+describe('😉 LSP Test Suite', () => {
+    it('LSP should be active', async () => {
+        // DEBUG: If you see this message in test output, lsp.test.ts is running!
+        // console.log("DEBUG: lsp.test.ts loaded and running");
 
         // Log all installed extension IDs for debugging
         const allExts = vscode.extensions.all.map(e => e.id);
@@ -95,28 +95,28 @@ describe('😉 Extension Test Suite', () => {
             assert.fail(`Extension not found. Installed extensions: ${allExtsStr}`);
         }
         await extension.activate();
-        assert.ok(extension.isActive, 'Extension should be active');
+        assert.ok(extension.isActive, 'LSP should be active');
     });
 
     it('Task provider should be registered', async () => {
             console.log('[justlang-lsp test] workspaceFolders:', vscode.workspace.workspaceFolders);
             const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
-            assert.ok(extension, 'Extension should be found');
+            assert.ok(extension, 'LSP should be found');
             await extension.activate();
             
             // Add delay to allow task provider to register and discover tasks
             console.log('[justlang-lsp test] Waiting for task provider to discover tasks...');
                 // Print full structure of fetched tasks for deep inspection
             await new Promise(resolve => setTimeout(resolve, 5000));
-// Extra debug: run "just -l" manually and print output
-const cp = require('child_process');
-try {
-    const { stdout, stderr } = cp.spawnSync('just', ['-l'], { cwd: '/tmp/test-workspace', encoding: 'utf-8' });
-    console.log('[justlang-lsp test] Manual just -l stdout:\n', stdout);
-    console.log('[justlang-lsp test] Manual just -l stderr:\n', stderr);
-} catch (err) {
-    console.error('[justlang-lsp test] Error running just -l manually:', err);
-}
+    // Extra debug: run "just -l" manually and print output
+    const cp = require('child_process');
+    try {
+        const { stdout, stderr } = cp.spawnSync('just', ['-l'], { cwd: '/tmp/test-workspace', encoding: 'utf-8' });
+        console.log('[justlang-lsp test] Manual just -l stdout:\n', stdout);
+        console.log('[justlang-lsp test] Manual just -l stderr:\n', stderr);
+    } catch (err) {
+        console.error('[justlang-lsp test] Error running just -l manually:', err);
+    }
             
             // Try to print available task types (may not be supported in all VSCode versions)
             if ((vscode.tasks as any).taskTypes) {
@@ -139,7 +139,7 @@ try {
             const tasks2 = await vscode.tasks.fetchTasks({ type: 'justlang' });
             console.log(`[justlang-lsp test] 🧩 Found ${tasks2.length} justlang tasks:`, tasks2.map(t => t.name));
 
-            const tasks3 = await vscode.tasks.fetchTasks({ type: 'justlang-lsp' }); 
+            const tasks3 = await vscode.tasks.fetchTasks({ type: 'justlang-lsp' });
             console.log(`[justlang-lsp test] 🧩 Found ${tasks3.length} justlang-lsp tasks:`, tasks3.map(t => t.name));
 
             const tasks4 = await vscode.tasks.fetchTasks();
@@ -157,7 +157,7 @@ try {
 
     it('Language configuration should be set', async () => {
         const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
-        assert.ok(extension, 'Extension should be found');
+        assert.ok(extension, 'LSP should be found');
         await extension.activate();
         const languages = await vscode.languages.getLanguages();
         assert.ok(languages.includes('just'), 'Just language should be registered');
@@ -165,7 +165,7 @@ try {
 
     it('Debug log file should be created during tests', async () => {
         const extension = vscode.extensions.getExtension('promptexecution.justlang-lsp');
-        assert.ok(extension, 'Extension should be found');
+        assert.ok(extension, 'LSP should be found');
         await extension.activate();
         
         // Add delay to allow language server to start and create log file
