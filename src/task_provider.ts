@@ -19,26 +19,9 @@ export class JustTaskProvider implements vscode.TaskProvider {
   }
 
   public provideTasks(): Thenable<vscode.Task[]> | undefined {
-    console.log(`[justlang-lsp debug] provideTasks() called`);
     if (!this.justPromise) {
-      console.log(`[justlang-lsp debug] Creating new justPromise`);
       this.justPromise = getJustTasks();
     }
-    this.justPromise.then(tasks => {
-      console.log(`[justlang-lsp debug] *** FINAL RESULT: provideTasks() returning ${tasks.length} tasks ***`);
-      tasks.forEach((task, index) => {
-        console.log(`[justlang-lsp debug] Final Task[${index}]:`, {
-          name: task.name,
-          source: task.source,
-          definition: JSON.stringify(task.definition),
-          execution: task.execution?.constructor.name,
-          scope: typeof task.scope === 'object' ? (task.scope as any).name : task.scope
-        });
-      });
-      console.log(`[justlang-lsp debug] *** END FINAL RESULT ***`);
-    }, err => {
-      console.error(`[justlang-lsp debug] provideTasks() error:`, err);
-    });
     return this.justPromise;
   }
 
@@ -118,17 +101,13 @@ async function getJustTasks(): Promise<vscode.Task[]> {
     const foundJustfiles = justfilePatterns
       .map(pattern => glob.sync(pattern, { cwd: folderString, nocase: true }))
       .flat();
-    console.log(`[justlang-lsp debug] Found Justfile candidates:`, foundJustfiles);
     if (!foundJustfiles.length) {
       continue;
     }
 
-    const commandLine = 'just -l'; // Adjusted to support JustLang file formats
+    const commandLine = 'just -l';
     try {
-      console.log(`[justlang-lsp debug] Executing command: ${commandLine} in cwd: ${folderString}`);
       const { stdout, stderr } = await exec(commandLine, { cwd: folderString });
-      console.log(`[justlang-lsp debug] just -l stdout:\n${stdout}`);
-      console.log(`[justlang-lsp debug] just -l stderr:\n${stderr}`);
       if (stderr && stderr.length > 0) {
         getOutputChannel().appendLine(stderr);
         getOutputChannel().show(true);
@@ -138,13 +117,9 @@ async function getJustTasks(): Promise<vscode.Task[]> {
 
         const recipeLines = stdout.trim().split('\n').splice(1);
         for (const line of recipeLines) {
-          console.log('[justlang-lsp debug] Processing recipe line:', JSON.stringify(line));
           const [recipeName, docComment] = line.split('#', 2);
-          console.log('[justlang-lsp debug] recipeName:', JSON.stringify(recipeName), 'docComment:', JSON.stringify(docComment));
           const parts = recipeName ? recipeName.trim().split(' ') : [];
-          console.log('[justlang-lsp debug] parts:', JSON.stringify(parts));
           const taskName = parts[0];
-          console.log('[justlang-lsp debug] taskName:', JSON.stringify(taskName));
           const taskDetail = docComment?.trim();
           
           // Create simple task definition following VSCode docs pattern
@@ -179,20 +154,10 @@ async function getJustTasks(): Promise<vscode.Task[]> {
             task.group = vscode.TaskGroup.Rebuild;
           }
           // For other tasks, don't assign a group - let them appear under the task type
-          console.log(`[justlang-lsp debug] Creating task:`, {
-            name: taskName,
-            type: (task as any).definition?.type || 'unknown',
-            detail: taskDetail,
-            definition,
-            definitionKeys: Object.keys(definition),
-            taskType: (task as any).type,
-            taskSource: (task as any).source
-          });
           result.push(task);
         }
       }
     } catch (err: any) {
-      console.error(`[justlang-lsp debug] Error executing just -l:`, err);
       const channel = getOutputChannel();
       if (err.stderr) {
         channel.appendLine(err.stderr);
@@ -204,7 +169,6 @@ async function getJustTasks(): Promise<vscode.Task[]> {
       channel.show(true);
     }
   }
-  console.log(`[justlang-lsp debug] getJustTasks() returning ${result.length} tasks total`);
   return result;
 }
 
