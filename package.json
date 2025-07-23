@@ -12,12 +12,19 @@
     "Debuggers",
     "Formatters"
   ],
-  "keywords": ["justfile", "just", "task runner", "mcp", "workflow", "cli"],
+  "keywords": [
+    "justfile",
+    "just",
+    "task runner",
+    "mcp",
+    "workflow",
+    "cli"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/elasticdotventures/justlang-lsp.git"
   },
-  "version": "0.0.20",
+  "version": "0.0.21",
   "engines": {
     "vscode": "^1.102.0"
   },
