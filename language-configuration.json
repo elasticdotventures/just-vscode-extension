@@ -1,2 +1,45 @@
 {
+  // 1. Comment settings
+  "comments": {
+    "lineComment": "#"
+  },
+
+  // 2. Bracket pairs for matching & navigation
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+
+  // 3. Auto‑closing on typing the open character
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" },
+    { "open": "`", "close": "`" }
+  ],
+
+  // 4. When you select a region and type an opener, wrap with these pairs
+  "surroundingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" },
+    { "open": "`", "close": "`" }
+  ],
+
+  // 5. Define what VS Code considers a “word” for double‑click, etc.
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\",\\.\\<\\>\\/\\?\\s]+)",
+
+  // 6. Folding by indentation and region markers
+  "folding": {
+    "offSide": true,
+    "markers": {
+      "start": "^\\s*#region\\b",
+      "end": "^\\s*#endregion\\b"
+    }
+  }
 }
