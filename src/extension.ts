@@ -105,12 +105,43 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Listen for configuration changes
     vscode.workspace.onDidChangeConfiguration((e) => {
+        const config = vscode.workspace.getConfiguration('justlang-lsp');
         if (e.affectsConfiguration('justlang-lsp.enableLsp')) {
-            const newEnableLsp = vscode.workspace.getConfiguration('justlang-lsp').get<boolean>('enableLsp', true);
+            const newEnableLsp = config.get<boolean>('enableLsp', true);
             if (newEnableLsp && !client) {
                 startLsp();
             } else if (!newEnableLsp && client) {
                 stopLsp();
+            }
+        }
+        if (e.affectsConfiguration('justlang-lsp.enableGrammar')) {
+            const newEnableGrammar = config.get<boolean>('enableGrammar', true);
+            if (newEnableGrammar) {
+                // Install grammar checker rules (set language configuration)
+                const languageConfig = loadLanguageConfiguration(context);
+                if (languageConfig) {
+                    log('😸 using languageConfig', languageConfig);
+                    vscode.languages.setLanguageConfiguration('just', languageConfig);
+                } else {
+                    log('😱 WARNING: Using basic internal language config for Just files.');
+                    vscode.languages.setLanguageConfiguration('just', {
+                        comments: {
+                            lineComment: '#',
+                        },
+                        brackets: [['(', ')']],
+                        autoClosingPairs: [
+                            { open: '{', close: '}' },
+                            { open: '[', close: ']' },
+                            { open: '(', close: ')' },
+                            { open: '"', close: '"' },
+                            { open: "'", close: "'" },
+                        ],
+                    });
+                }
+            } else {
+                // Remove grammar checker rules (unload language configuration)
+                vscode.languages.setLanguageConfiguration('just', {});
+                log('[justlang-lsp] Grammar/language configuration subsystem disabled (rules removed)');
             }
         }
     });
