@@ -24,7 +24,7 @@
     "type": "git",
     "url": "https://github.com/elasticdotventures/justlang-lsp.git"
   },
-  "version": "0.0.31",
+  "version": "0.0.32",
   "engines": {
     "vscode": "^1.102.0"
   },
