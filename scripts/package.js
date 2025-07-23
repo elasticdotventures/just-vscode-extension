@@ -18,33 +18,18 @@ if (fs.existsSync(tempDir)) {
 fs.mkdirSync(tempDir);
 
 try {
-    // Create minimal package.json for VSCode extension (runtime dependencies only)
-    const runtimeDeps = {
-        // Only include actual runtime dependencies needed by the extension
-        // Based on your main entry point in dist/extension.js, most of these are build-time only
-    };
+    // 🦨 FIX: Copy all properties except scripts (and optionally devDependencies)
+    const prodPkg = { ...pkg };
+    prodPkg.scripts = {};
+    // Optionally remove devDependencies from the package
+    if (prodPkg.devDependencies) { delete prodPkg.devDependencies; }
+    // Optionally remove private field if present
+    if (prodPkg.private) { delete prodPkg.private; }
 
-    // const prodPkg = {
-    //     name: pkg.name,
-    //     publisher: pkg.publisher,
-    //     displayName: pkg.displayName,
-    //     description: pkg.description,
-    //     repository: pkg.repository,
-    //     version: pkg.version,
-    //     engines: pkg.engines,
-    //     categories: pkg.categories,
-    //     activationEvents: pkg.activationEvents,
-    //     main: pkg.main,
-    //     contributes: pkg.contributes,
-    //     dependencies: runtimeDeps,
-    //     // Remove all scripts to avoid any execution during packaging
-    //     scripts: {}
-    // };
-    
-    // fs.writeFileSync(
-    //     path.join(tempDir, 'package.json'), 
-    //     JSON.stringify(prodPkg, null, 2)
-    // );
+    fs.writeFileSync(
+        path.join(tempDir, 'package.json'), 
+        JSON.stringify(prodPkg, null, 2)
+    );
 
     // Copy essential files for VSCode extension
     const filesToCopy = [
@@ -52,7 +37,6 @@ try {
         'icons',
         'syntaxes', 
         'robot.png',
-        'package.json',
         'language-configuration.json',
         'justfile',
         'README.md',
