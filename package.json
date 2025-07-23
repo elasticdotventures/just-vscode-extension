@@ -154,6 +154,33 @@
           "type": "boolean",
           "default": false,
           "description": "Use a single terminal instance for all recipe executions (requires runInTerminal to be enabled)."
+        },
+        "justlang-lsp.logLevel": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "error",
+            "none"
+          ],
+          "default": "info",
+          "description": "Set the log level. Recipe output is logged at the info level."
+        },
+        "justlang-lsp.shell": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Set command used to invoke recipes and evaluate backticks on Unix systems. Example: ['bash', '-c']"
+        },
+        "justlang-lsp.windowsShell": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Set the command used to invoke recipes on Windows. Example: ['powershell.exe', '-Command']"
         }
       }
     },

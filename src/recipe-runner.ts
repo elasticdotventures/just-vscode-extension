@@ -3,14 +3,19 @@ import { spawn, ChildProcess } from 'child_process';
 import { RecipeManager } from './recipe-manager';
 import { RecipeParameterHandler, ParameterInput } from './recipe-parameters';
 import { RecipeParsed, RecipeQuickPickItem } from './recipe-types';
+import { getLogger } from './logger';
+import { getTerminalManager } from './terminal-manager';
 
 export class RecipeRunner {
     private recipeManager: RecipeManager;
     private parameterHandler: RecipeParameterHandler;
+    private logger = getLogger();
+    private terminalManager = getTerminalManager();
 
     constructor(private workspaceRoot: string) {
         this.recipeManager = new RecipeManager(workspaceRoot);
         this.parameterHandler = new RecipeParameterHandler();
+        this.logger.info('Recipe runner initialized', 'RecipeRunner', { workspaceRoot });
     }
 
     /**
@@ -38,8 +43,8 @@ export class RecipeRunner {
             await this.executeRecipe(selectedItem.recipe);
 
         } catch (error) {
+            this.logger.errorFromException(error, 'Recipe execution failed');
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error('[justlang-lsp] Recipe execution failed:', error);
             vscode.window.showErrorMessage(`Failed to run recipe: ${errorMessage}`);
         }
     }
@@ -68,8 +73,8 @@ export class RecipeRunner {
             await this.executeRecipe(recipe);
 
         } catch (error) {
+            this.logger.errorFromException(error, `Failed to run recipe '${recipeName}'`);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error('[justlang-lsp] Recipe execution failed:', error);
             vscode.window.showErrorMessage(`Failed to run recipe '${recipeName}': ${errorMessage}`);
         }
     }
@@ -128,8 +133,8 @@ export class RecipeRunner {
             }
 
         } catch (error) {
+            this.logger.errorFromException(error, 'Recipe browser failed');
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error('[justlang-lsp] Recipe browser failed:', error);
             vscode.window.showErrorMessage(`Failed to show recipes: ${errorMessage}`);
         }
     }
@@ -180,8 +185,8 @@ export class RecipeRunner {
             await this.executeJustCommand(args, recipe);
 
         } catch (error) {
+            this.logger.errorFromException(error, `Failed to execute recipe '${recipe.name}'`);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error('[justlang-lsp] Recipe execution failed:', error);
             vscode.window.showErrorMessage(`Failed to execute recipe '${recipe.name}': ${errorMessage}`);
         }
     }
@@ -205,33 +210,40 @@ export class RecipeRunner {
         const justPath = config.get<string>('justPath', 'just');
         const runInTerminal = config.get<boolean>('runInTerminal', false);
 
-        console.log(`[justlang-lsp] Executing: ${justPath} ${args.join(' ')}`);
+        this.logger.info(`Executing recipe: ${recipe.name}`, 'RecipeRunner', {
+            command: justPath,
+            args: args,
+            runInTerminal
+        });
 
         if (runInTerminal) {
-            this.runInTerminal(justPath, args, recipe);
+            await this.runInTerminal(justPath, args, recipe);
         } else {
             this.runInBackground(justPath, args, recipe);
         }
     }
 
     /**
-     * Run recipe in VSCode terminal
+     * Run recipe in VSCode terminal using advanced terminal manager
      */
-    private runInTerminal(justPath: string, args: string[], recipe: RecipeParsed): void {
+    private async runInTerminal(justPath: string, args: string[], recipe: RecipeParsed): Promise<void> {
         const terminalName = `Just: ${recipe.name}`;
         
-        // Find existing terminal or create new one
-        let terminal = vscode.window.terminals.find(t => t.name === terminalName);
-        if (!terminal) {
-            terminal = vscode.window.createTerminal({
-                name: terminalName,
-                cwd: this.workspaceRoot
+        try {
+            await this.terminalManager.execute({
+                command: justPath,
+                args: args,
+                cwd: this.workspaceRoot,
+                terminalName: terminalName,
+                reuseTerminal: vscode.workspace.getConfiguration('justlang-lsp').get<boolean>('useSingleTerminal', false),
+                showTerminal: true
             });
-        }
 
-        const command = `${justPath} ${args.join(' ')}`;
-        terminal.sendText(command);
-        terminal.show();
+            this.logger.info(`Recipe executed in terminal: ${recipe.name}`, 'RecipeRunner');
+        } catch (error) {
+            this.logger.errorFromException(error, `Failed to execute recipe in terminal: ${recipe.name}`);
+            throw error;
+        }
     }
 
     /**
@@ -241,9 +253,16 @@ export class RecipeRunner {
         const outputChannel = vscode.window.createOutputChannel(`Just Recipe: ${recipe.name}`);
         outputChannel.show();
         
-        outputChannel.appendLine(`[${new Date().toISOString()}] Executing: ${justPath} ${args.join(' ')}`);
+        const timestamp = new Date().toISOString();
+        outputChannel.appendLine(`[${timestamp}] Executing: ${justPath} ${args.join(' ')}`);
         outputChannel.appendLine(`Working directory: ${this.workspaceRoot}`);
         outputChannel.appendLine('─'.repeat(50));
+
+        this.logger.info(`Running recipe in background: ${recipe.name}`, 'RecipeRunner', {
+            command: justPath,
+            args: args,
+            cwd: this.workspaceRoot
+        });
 
         const childProcess: ChildProcess = spawn(justPath, args, { 
             cwd: this.workspaceRoot,
@@ -259,17 +278,23 @@ export class RecipeRunner {
         });
 
         childProcess.on('close', (code) => {
+            const timestamp = new Date().toISOString();
             outputChannel.appendLine('─'.repeat(50));
+            
             if (code === 0) {
-                outputChannel.appendLine(`[${new Date().toISOString()}] Recipe '${recipe.name}' completed successfully.`);
+                outputChannel.appendLine(`[${timestamp}] Recipe '${recipe.name}' completed successfully.`);
+                this.logger.info(`Recipe completed successfully: ${recipe.name}`, 'RecipeRunner', { exitCode: code });
             } else {
-                outputChannel.appendLine(`[${new Date().toISOString()}] Recipe '${recipe.name}' failed with exit code ${code}.`);
+                outputChannel.appendLine(`[${timestamp}] Recipe '${recipe.name}' failed with exit code ${code}.`);
+                this.logger.error(`Recipe failed: ${recipe.name}`, 'RecipeRunner', { exitCode: code });
                 vscode.window.showErrorMessage(`Recipe '${recipe.name}' failed with exit code ${code}. Check output for details.`);
             }
         });
 
         childProcess.on('error', (error) => {
-            outputChannel.appendLine(`[${new Date().toISOString()}] Error: ${error.message}`);
+            const timestamp = new Date().toISOString();
+            outputChannel.appendLine(`[${timestamp}] Error: ${error.message}`);
+            this.logger.errorFromException(error, `Recipe execution error: ${recipe.name}`);
             vscode.window.showErrorMessage(`Failed to execute recipe: ${error.message}`);
         });
     }

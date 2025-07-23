@@ -10,6 +10,7 @@ import {
     RecipeParameterKind,
     RecipeAttribute
 } from './recipe-types';
+import { getLogger } from './logger';
 
 const asyncExec = promisify(exec);
 
@@ -17,8 +18,11 @@ export class RecipeManager {
     private cachedRecipes: RecipeParsed[] | null = null;
     private cacheTimestamp: number = 0;
     private readonly cacheTimeout = 5000; // 5 seconds
+    private logger = getLogger();
 
-    constructor(private workspaceRoot: string) {}
+    constructor(private workspaceRoot: string) {
+        this.logger.info('Recipe manager initialized', 'RecipeManager', { workspaceRoot });
+    }
 
     /**
      * Get the path to the just executable
@@ -41,7 +45,10 @@ export class RecipeManager {
 
         try {
             const cmd = `${this.getJustPath()} --dump --dump-format=json`;
-            console.log(`[justlang-lsp] Executing: ${cmd}`);
+            this.logger.info('Fetching recipes using JSON dump', 'RecipeManager', { 
+                command: cmd,
+                workspaceRoot: this.workspaceRoot 
+            });
             
             const { stdout, stderr } = await asyncExec(cmd, { 
                 cwd: this.workspaceRoot,
@@ -49,7 +56,7 @@ export class RecipeManager {
             });
 
             if (stderr) {
-                console.warn('[justlang-lsp] Just dump stderr:', stderr);
+                this.logger.warning('Just dump produced stderr output', 'RecipeManager', { stderr });
             }
 
             const recipes = this.parseRecipes(stdout);
@@ -58,12 +65,12 @@ export class RecipeManager {
             this.cachedRecipes = recipes;
             this.cacheTimestamp = now;
             
-            console.log(`[justlang-lsp] Found ${recipes.length} recipes`);
+            this.logger.info(`Found ${recipes.length} recipes`, 'RecipeManager', { count: recipes.length });
             return recipes;
 
         } catch (error) {
+            this.logger.errorFromException(error, 'Failed to get recipes');
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error('[justlang-lsp] Failed to get recipes:', errorMessage);
             
             // Show user-friendly error message
             vscode.window.showErrorMessage(
@@ -91,7 +98,7 @@ export class RecipeManager {
                 .filter((recipe): recipe is RecipeParsed => recipe !== null);
                 
         } catch (error) {
-            console.error('[justlang-lsp] Failed to parse recipe JSON:', error);
+            this.logger.errorFromException(error, 'Failed to parse recipe JSON');
             return [];
         }
     }
