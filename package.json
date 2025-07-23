@@ -30,12 +30,11 @@
         ],
         "filenames": [
           "justfile",
+          "Justfile",
           ".justfile",
           ".just"
         ],
         "extensions": [
-          "justfile",
-          "Justfile",
           ".justfile",
           ".just"
         ],
@@ -50,7 +49,7 @@
       {
         "language": "justlang",
         "scopeName": "source.just",
-        "path": "./syntaxes/just.tmLanguage.json",
+        "path": "./syntaxes/just.tmLanguage.yaml",
         "embeddedLanguages": {
           "meta.embedded.block.js": "javascript",
           "meta.embedded.block.lua": "lua",

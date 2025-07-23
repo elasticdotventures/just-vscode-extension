@@ -39,6 +39,9 @@ Once installed, you can either add the `just-lsp` executable to your system's `P
 
 ### Testing
 Run `npm test` to execute the test suite.
+open a justfile
+    Developer: Inspect Editor Tokens and Scopes
+
 
 ## References
 
