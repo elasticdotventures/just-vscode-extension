@@ -30,13 +30,22 @@
           "Just",
           "just"
         ],
+        "filenames": [
+          "justfile",
+          ".justfile",
+          ".just"
+        ],
         "extensions": [
           "justfile",
           "Justfile",
           ".justfile",
           ".just"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "icons/robot.png",
+          "dark": "icons/robot.png"
+        }
       }
     ],
     "files": [
@@ -68,6 +77,11 @@
           "type": "string",
           "default": "",
           "description": "Path to the just-lsp executable. If not specified, it will be searched for in the system PATH."
+        },
+        "justlang-lsp.debug.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug logging for the just-lsp server. Logs will be written to justlang_lsp.log in the workspace root."
         }
       }
     }

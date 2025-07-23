@@ -40,8 +40,13 @@ Once installed, you can either add the `just-lsp` executable to your system's `P
 ### Testing
 Run `npm test` to execute the test suite.
 
+## References
+
+* https://code.visualstudio.com/api/references/contribution-points#contributes.languages
+
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 ### Attribution
 Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.

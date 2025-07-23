@@ -1,7 +1,9 @@
 # Justfile for building, testing, packaging, and installing the VSCode Justfile LSP provider
 
 # 🤓 export display for GUI applications, ALWAYS Use this, it is set correctly on init.
-DISPLAY:="localhost:10.0"
+# TODO: only set $DISPLAY if the env $env:DISPALY
+#DISPLAY:="localhost:10.0"
+DISPLAY := env("DISPLAY", "localhost:10.0")
 VSCODE:="~/.dotfiles/vscode.sh"
 
 EXT_VER := `jq -r .version package.json`
@@ -26,6 +28,15 @@ test:
     # Run extension host tests only if precompiled tests pass
     just package
     export DISPLAY={{DISPLAY}} && pnpm exec vscode-test
+
+test-lsp:
+    #!/bin/bash
+    # MUST BE RUN AS /bin/bash so that {} aren't interpolated by lsp
+    # THIS WONT WORK: no content header
+    # echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | just-lsp  
+    rm foo || true
+    echo -e 'Content-Length: 76\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | just-lsp --log foo
+    cat foo
 
 # Package the VSCode extension into a .vsix file
 package:

@@ -18,9 +18,17 @@ function findExecutable(bin: string): string | null {
     return null;
 }
 
+// runs the justlsp binary 
 export function createLanguageClient(context: vscode.ExtensionContext): LanguageClient | null {
     const config = vscode.workspace.getConfiguration('justlang-lsp');
+
+    // Find the binary
     const serverPath = config.get<string>('server.path') || findExecutable('just-lsp');
+    
+    // Check if debug logging is enabled (force enable during tests)
+    const isTestEnvironment = process.env.NODE_ENV === 'test' || process.env.VSCODE_TEST === '1';
+    const debugEnabled = isTestEnvironment || config.get<boolean>('debug.enabled', false);
+
     // Check if the just-lsp binary is executable
     try {
         if (serverPath && fs.existsSync(serverPath)) {
@@ -46,17 +54,44 @@ export function createLanguageClient(context: vscode.ExtensionContext): Language
     console.log(`[justlang-lsp] Found just-lsp executable at: ${serverPath}`);
     console.log('[justlang-lsp] Preparing to launch language server process...');
 
+    // Prepare server arguments
+    const args: string[] = [];
+    
+    // Add debug logging if enabled
+    if (debugEnabled) {
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (workspaceRoot) {
+            const logPath = path.join(workspaceRoot, 'justlang_lsp.log');
+            args.push('--log', logPath);
+            console.log(`[justlang-lsp] Debug logging enabled, writing to: ${logPath}`);
+        } else {
+            console.warn('[justlang-lsp] Debug logging enabled but no workspace folder found');
+        }
+    } else {
+        console.log('[justlang-lsp] Debug logging disabled');
+    }
+
     const serverOptions: ServerOptions = {
         command: serverPath,
-        args: [],
+        args: args,
+        options: {
+            env: process.env
+        }
     };
 
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ scheme: 'file', language: 'just' }],
+        outputChannelName: 'Just Language Server',
+        initializationOptions: {}
     };
 
     try {
         console.log('[justlang-lsp] Creating LanguageClient instance...');
+        // console.log('[justlang-lsp] Server options:', JSON.stringify(serverOptions, null, 2));
+        
+        
+        console.log('[justlang-lsp] Client options:', JSON.stringify(clientOptions, null, 2));
+        
         const client = new LanguageClient(
             'justlang-lsp',
             'Just Language Server',
@@ -64,12 +99,34 @@ export function createLanguageClient(context: vscode.ExtensionContext): Language
             clientOptions
         );
         console.log('[justlang-lsp] LanguageClient instance created.');
+        
+        // Add event listeners for better debugging
+        client.onDidChangeState((event) => {
+            console.log(`[justlang-lsp] Client state changed: ${event.oldState} -> ${event.newState}`);
+        });
+
+        client.onNotification('window/logMessage', (params) => {
+            console.log(`[justlang-lsp] Server log: ${params.message}`);
+        });
+
+        client.onNotification('window/showMessage', (params) => {
+            console.log(`[justlang-lsp] Server message: ${params.message}`);
+        });
+        
         return client;
     } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const errorStack = err instanceof Error ? err.stack : 'No stack trace available';
+        
         vscode.window.showErrorMessage(
-            `Failed to create LanguageClient: ${err instanceof Error ? err.message : String(err)}`
+            `Failed to create LanguageClient: ${errorMessage}`
         );
-        console.error('[justlang-lsp] Failed to create LanguageClient:', err);
+        console.error('[justlang-lsp] Failed to create LanguageClient:', {
+            message: errorMessage,
+            stack: errorStack,
+            serverOptions,
+            clientOptions
+        });
         return null;
     }
 }
