@@ -24,33 +24,35 @@ try {
         // Based on your main entry point in dist/extension.js, most of these are build-time only
     };
 
-    const prodPkg = {
-        name: pkg.name,
-        publisher: pkg.publisher,
-        displayName: pkg.displayName,
-        description: pkg.description,
-        repository: pkg.repository,
-        version: pkg.version,
-        engines: pkg.engines,
-        categories: pkg.categories,
-        activationEvents: pkg.activationEvents,
-        main: pkg.main,
-        contributes: pkg.contributes,
-        dependencies: runtimeDeps,
-        // Remove all scripts to avoid any execution during packaging
-        scripts: {}
-    };
+    // const prodPkg = {
+    //     name: pkg.name,
+    //     publisher: pkg.publisher,
+    //     displayName: pkg.displayName,
+    //     description: pkg.description,
+    //     repository: pkg.repository,
+    //     version: pkg.version,
+    //     engines: pkg.engines,
+    //     categories: pkg.categories,
+    //     activationEvents: pkg.activationEvents,
+    //     main: pkg.main,
+    //     contributes: pkg.contributes,
+    //     dependencies: runtimeDeps,
+    //     // Remove all scripts to avoid any execution during packaging
+    //     scripts: {}
+    // };
     
-    fs.writeFileSync(
-        path.join(tempDir, 'package.json'), 
-        JSON.stringify(prodPkg, null, 2)
-    );
+    // fs.writeFileSync(
+    //     path.join(tempDir, 'package.json'), 
+    //     JSON.stringify(prodPkg, null, 2)
+    // );
 
     // Copy essential files for VSCode extension
     const filesToCopy = [
         'dist',
         'icons',
         'syntaxes', 
+        'robot.png',
+        'package.json',
         'language-configuration.json',
         'justfile',
         'README.md',
