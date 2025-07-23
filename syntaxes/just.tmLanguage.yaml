@@ -90,7 +90,7 @@ repository:
         end: "^$"
         beginCaptures:
           "1":
-            - name: comment.line.shebang.just
+            name: comment.line.shebang.just
           "2":
             name: keyword.other
         contentName: meta.embedded.block.lua
