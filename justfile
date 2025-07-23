@@ -8,6 +8,11 @@ VSCODE:="~/.dotfiles/vscode.sh"
 
 EXT_VER := `jq -r .version package.json`
 
+bump-patch:
+    git add -u .
+    git commit -m "Bump patch version to {{EXT_VER}}"
+    pnpm version patch
+
 run-debug-extension:
     pnpm run compile && DISPLAY={{DISPLAY}} pnpm run test
 

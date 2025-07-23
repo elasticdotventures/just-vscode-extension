@@ -29,6 +29,9 @@ export class JustTaskProvider implements vscode.TaskProvider {
     }, err => {
       console.error(`[justlang-lsp debug] provideTasks() error:`, err);
     });
+    this.justPromise.then(tasks => {
+      console.log('[justlang-lsp debug] FINAL tasks returned to VSCode:', JSON.stringify(tasks, null, 2));
+    });
     return this.justPromise;
   }
 
@@ -94,11 +97,16 @@ async function getJustTasks(): Promise<vscode.Task[]> {
     if (!folderString) {
       continue;
     }
-    const justfile = path.join(folderString, 'Justfile');
-    console.log(`[justlang-lsp debug] Checking for Justfile at: ${justfile}`);
-    const justfileExists = fs.existsSync(justfile);
-    console.log(`[justlang-lsp debug] Justfile exists: ${justfileExists}`);
-    if (!justfileExists) {
+    // DRY glob-based Justfile detection
+    const glob = require('glob');
+    const justfilePatterns = [
+      'Justfile', '.justfile', '*.just', '*.justfile', 'justfile', '.Justfile', 'JUSTFILE'
+    ];
+    const foundJustfiles = justfilePatterns
+      .map(pattern => glob.sync(pattern, { cwd: folderString, nocase: true }))
+      .flat();
+    console.log(`[justlang-lsp debug] Found Justfile candidates:`, foundJustfiles);
+    if (!foundJustfiles.length) {
       continue;
     }
 
@@ -117,24 +125,53 @@ async function getJustTasks(): Promise<vscode.Task[]> {
 
         const recipeLines = stdout.trim().split('\n').splice(1);
         for (const line of recipeLines) {
+          console.log('[justlang-lsp debug] Processing recipe line:', JSON.stringify(line));
           const [recipeName, docComment] = line.split('#', 2);
-          const parts = recipeName.trim().split(' ');
+          console.log('[justlang-lsp debug] recipeName:', JSON.stringify(recipeName), 'docComment:', JSON.stringify(docComment));
+          const parts = recipeName ? recipeName.trim().split(' ') : [];
+          console.log('[justlang-lsp debug] parts:', JSON.stringify(parts));
           const taskName = parts[0];
+          console.log('[justlang-lsp debug] taskName:', JSON.stringify(taskName));
           const taskDetail = docComment?.trim();
-          const definition: JustTaskDefinition = {
-            type: 'just',
+          // Construct a plain object with only allowed keys
+          const definition = Object.assign(Object.create(null), {
             task: taskName,
             dir: folderString,
             promptForArgs: parts.length > 1,
             flakeExists
-          };
-          const task = new vscode.Task(definition, workspaceFolder, taskName, 'just', getExecution(definition));
+          }) as JustTaskDefinition;
+          // Assign to a group if the name matches common groups, else use custom group
+          let group: vscode.TaskGroup | string | undefined = undefined;
+          if (taskName === 'build') {
+              group = vscode.TaskGroup.Build;
+          } else if (taskName === 'test') {
+              group = vscode.TaskGroup.Test;
+          } else if (taskName === 'clean') {
+              group = vscode.TaskGroup.Clean;
+          } else if (taskName === 'rebuild') {
+              group = vscode.TaskGroup.Rebuild;
+          } else {
+              group = 'just';
+          }
+          const task = new vscode.Task(
+            definition,
+            workspaceFolder,
+            taskName,
+            'just',
+            getExecution(definition)
+          );
+          if (group) {
+            (task as any).group = group;
+          }
           task.detail = taskDetail;
           console.log(`[justlang-lsp debug] Creating task:`, {
             name: taskName,
-            type: definition.type,
+            type: (task as any).definition?.type || 'unknown',
             detail: taskDetail,
-            definition
+            definition,
+            definitionKeys: Object.keys(definition),
+            taskType: (task as any).type,
+            taskSource: (task as any).source
           });
           result.push(task);
         }

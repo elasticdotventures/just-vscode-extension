@@ -7,3 +7,6 @@ node_modules
 logs/
 context_portal/
 *~
+justlang_lsp.log
+scripts/read-*.ts
+scripts/test-*.js

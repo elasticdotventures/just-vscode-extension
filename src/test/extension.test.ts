@@ -66,6 +66,19 @@ before(() => {
         console.warn(`[justlang-lsp test] Source Justfile not found: ${sourceJustfile}`);
     }
 });
+    it('should confirm shellExecution is supported in this environment', () => {
+        let shellSupported = false;
+        try {
+            // Try to create a ShellExecution as a runtime check
+            // @ts-ignore
+            const exec = new vscode.ShellExecution('echo test');
+            shellSupported = !!exec;
+        } catch (e) {
+            shellSupported = false;
+        }
+        console.log('[justlang-lsp test] shellExecutionSupported:', shellSupported);
+        assert.ok(shellSupported, 'shellExecution should be supported in this environment');
+    });
 
 describe('😉 Extension Test Suite', () => {
     it('Extension should be active', async () => {
@@ -93,6 +106,7 @@ describe('😉 Extension Test Suite', () => {
             
             // Add delay to allow task provider to register and discover tasks
             console.log('[justlang-lsp test] Waiting for task provider to discover tasks...');
+                // Print full structure of fetched tasks for deep inspection
             await new Promise(resolve => setTimeout(resolve, 5000));
 // Extra debug: run "just -l" manually and print output
 const cp = require('child_process');
@@ -104,15 +118,32 @@ try {
     console.error('[justlang-lsp test] Error running just -l manually:', err);
 }
             
+            // Try to print available task types (may not be supported in all VSCode versions)
+            if ((vscode.tasks as any).taskTypes) {
+                console.log('[justlang-lsp test] Available task types:', (vscode.tasks as any).taskTypes);
+            } else {
+                console.log('[justlang-lsp test] vscode.tasks.taskTypes not available in this VSCode version');
+            }
             console.log('[justlang-lsp test] Fetching just tasks...');
             const tasks = await vscode.tasks.fetchTasks({ type: 'just' });
+            console.dir(tasks, { depth: 5 });
+            // Print detailed info for each fetched task
+            tasks.forEach((task, idx) => {
+                console.log(`[justlang-lsp test] Task[${idx}] type:`, (task as any).type, 'source:', (task as any).source, 'definition:', (task as any).definition);
+            });
+            // Print all registered extensions and their activation status
+            vscode.extensions.all.forEach(ext => {
+                console.log(`[justlang-lsp test] Extension: ${ext.id}, active: ${ext.isActive}`);
+            });
             console.log(`[justlang-lsp test] 🧩 Found ${tasks.length} just tasks:`, tasks.map(t => t.name));
-
             const tasks2 = await vscode.tasks.fetchTasks({ type: 'justlang' });
             console.log(`[justlang-lsp test] 🧩 Found ${tasks2.length} justlang tasks:`, tasks2.map(t => t.name));
 
             const tasks3 = await vscode.tasks.fetchTasks({ type: 'justlang-lsp' }); 
             console.log(`[justlang-lsp test] 🧩 Found ${tasks3.length} justlang-lsp tasks:`, tasks3.map(t => t.name));
+
+            const tasks4 = await vscode.tasks.fetchTasks();
+            console.log(`[justlang-lsp test] 🧩 Found ${tasks4.length} OTHER tasks:`, tasks4.map(t => t.name));
 
             // Define a sample task filter, e.g., for tasks of type 'just'
             
