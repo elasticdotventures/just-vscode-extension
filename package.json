@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/elasticdotventures/justlang-lsp.git"
   },
-  "version": "0.0.19",
+  "version": "0.0.20",
   "engines": {
     "vscode": "^1.102.0"
   },
