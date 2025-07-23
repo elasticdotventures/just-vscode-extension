@@ -3,7 +3,7 @@
   "publisher": "promptexecution",
   "displayName": "justlang-lsp",
   "description": "",
-  "icon": "./icons/robot.png",
+  "icon": "robot.png",
   "license": "MIT",
   "licenseText": "MIT License\n\nCopyright (c) 2025 Brian H &amp; others",
   "categories": [
