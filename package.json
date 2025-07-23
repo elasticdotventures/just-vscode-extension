@@ -7,22 +7,20 @@
     "type": "git",
     "url": "https://github.com/elasticdotventures/justlang-lsp.git"
   },
-  "version": "0.0.5",
+  "version": "0.0.9",
   "engines": {
     "vscode": "^1.102.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onLanguage:just"],
+  "activationEvents": [
+    "onTaskType:just",
+    "onFileSystem:justfile",
+    "onFileSystem:.justfile"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "justlang-lsp.helloWorld",
-        "title": "Hello World"
-      }
-    ],
     "languages": [
       {
         "id": "just",
@@ -47,12 +45,6 @@
           "dark": "icons/robot.png"
         }
       }
-    ],
-    "files": [
-      "dist",
-      "syntaxes",
-      "language-configuration.json",
-      "package.json"
     ],
     "grammars": [
       {
@@ -82,9 +74,68 @@
           "type": "boolean",
           "default": false,
           "description": "Enable debug logging for the just-lsp server. Logs will be written to justlang_lsp.log in the workspace root."
+        },
+        "justlang-lsp.enableLsp": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the Just LSP provider. Unchecking this will unload the LSP dynamically."
         }
       }
-    }
+    },
+    "taskDefinitions": [
+      {
+        "type": "just",
+        "when": "shellExecutionSupported",
+        "required": [
+          "task",
+          "dir"
+        ],
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "The Just recipe to run."
+          },
+          "dir": {
+            "type": "string",
+            "description": "The working directory for the Just task."
+          },
+          "promptForArgs": {
+            "type": "boolean",
+            "description": "Whether to prompt for additional arguments before running the task.",
+            "default": false
+          },
+          "flakeExists": {
+            "type": "boolean",
+            "description": "Whether a flake.nix file exists in the workspace.",
+            "default": false
+          }
+        }
+      }
+    ],
+    "taskGroups": [
+      {
+        "id": "just",
+        "label": "Justfile",
+        "isDefault": true
+      }
+    ],
+    "commands": [
+      {
+        "command": "justlang.formatDocument",
+        "title": "Just: Format Document"
+      },
+      {
+        "command": "justlang.runRecipe",
+        "title": "Just: Run Recipe"
+      }
+    ],
+    "files": [
+      "dist",
+      "syntaxes",
+      "justfile",
+      "language-configuration.json",
+      "package.json"
+    ]
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
@@ -126,6 +177,7 @@
     "@typescript-eslint/rule-tester": "^8.38.0",
     "@vitest/coverage-v8": "^3.2.4",
     "cross-fetch": "^4.1.0",
+    "glob": "^11.0.3",
     "json-schema": "^0.4.0",
     "jsonc-parser": "^3.3.1",
     "markdown-table": "^3.0.4",
