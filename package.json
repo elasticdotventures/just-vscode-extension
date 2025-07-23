@@ -38,10 +38,18 @@
     "languages": [
       {
         "id": "justlang",
-        "aliases": [
-          "Just",
-          "just"
-        ],
+        "aliases": ["JustLang", "justlang"],
+        "filenames": [],
+        "extensions": [],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "icons/robot.png",
+          "dark": "icons/robot.png"
+        }
+      },
+      {
+        "id": "just",
+        "aliases": ["Just", "just"],
         "filenames": [
           "justfile",
           "Justfile",
@@ -62,6 +70,19 @@
     "grammars": [
       {
         "language": "justlang",
+        "scopeName": "source.just",
+        "path": "syntaxes/just.tmLanguage.yaml",
+        "embeddedLanguages": {
+          "meta.embedded.block.js": "javascript",
+          "meta.embedded.block.lua": "lua",
+          "meta.embedded.block.perl": "perl",
+          "meta.embedded.block.python": "python",
+          "meta.embedded.block.ruby": "ruby",
+          "meta.embedded.block.shellscript": "shellscript"
+        }
+      },
+      {
+        "language": "just",
         "scopeName": "source.just",
         "path": "syntaxes/just.tmLanguage.yaml",
         "embeddedLanguages": {
