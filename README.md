@@ -65,6 +65,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 **Language Server Integration**: This extension integrates with the `just-lsp` language server, which provides advanced language features including completions, hover documentation, go-to-definition, references, rename, and formatting capabilities. The language server supports 133 built-in functions, attributes, constants, and settings for comprehensive Just language support.
 
+**Advanced Recipe Management & Terminal Integration**: Recipe parsing, parameter handling, terminal management, and formatting features were adapted and enhanced from the [nefrob/vscode-just](https://github.com/nefrob/vscode-just) repository under the MIT License. This includes JSON recipe parsing, interactive parameter prompts, flexible terminal execution options, and professional logging systems.
+
 **Syntax Highlighting**: Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
 
 ## Thanks

@@ -139,6 +139,21 @@
           "type": "boolean",
           "default": false,
           "description": "Enable verbose logging for all Just extension subsystems (LSP, watcher, grammar, task provider)."
+        },
+        "justlang-lsp.justPath": {
+          "type": "string",
+          "default": "just",
+          "description": "Path to the just executable. If not specified, 'just' will be used from PATH."
+        },
+        "justlang-lsp.runInTerminal": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run recipes in VSCode terminal instead of background process with output channel."
+        },
+        "justlang-lsp.useSingleTerminal": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use a single terminal instance for all recipe executions (requires runInTerminal to be enabled)."
         }
       }
     },
