@@ -3,9 +3,16 @@
   "publisher": "promptexecution",
   "displayName": "justlang-lsp",
   "description": "",
-  "icon": "icons/robot.png",
+  "icon": "./icons/robot.png",
   "license": "MIT",
   "licenseText": "MIT License\n\nCopyright (c) 2025 Brian H &amp; others",
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Debuggers",
+    "Formatters"
+  ],
+  "keywords": ["justfile", "just", "task runner", "mcp", "workflow", "cli"],
   "repository": {
     "type": "git",
     "url": "https://github.com/elasticdotventures/justlang-lsp.git"
@@ -14,9 +21,6 @@
   "engines": {
     "vscode": "^1.102.0"
   },
-  "categories": [
-    "Other"
-  ],
   "activationEvents": [
     "onTaskType:just",
     "onFileSystem:justfile",
