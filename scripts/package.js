@@ -20,10 +20,12 @@ fs.mkdirSync(tempDir);
 try {
     const prodPkg = { ...pkg };
     prodPkg.scripts = {};
-    // Optionally remove devDependencies from the package
+    // Remove devDependencies from the package
     if (prodPkg.devDependencies) { delete prodPkg.devDependencies; }
-    // Optionally remove private field if present
+    // Remove private field if present
     if (prodPkg.private) { delete prodPkg.private; }
+    // Only include runtime dependencies (empty for most VSCode extensions)
+    prodPkg.dependencies = {};
 
     fs.writeFileSync(
         path.join(tempDir, 'package.json'), 
