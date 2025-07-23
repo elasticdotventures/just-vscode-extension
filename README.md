@@ -6,12 +6,22 @@ JustLang-LSP is a Visual Studio Code extension designed to enhance the developme
 This extension now includes a language client for the `just-lsp` language server, providing features like completion, diagnostics, and more.
 
 ## Features
-- **Language Server Integration**: Connects to the `just-lsp` language server for advanced language features.
-- **Task Provider Integration**: Automatically detects and registers tasks from JustLang files (`Justfile`, `.justfile`, or `*.just`).
-- **Command Registration**: Includes a sample command (`justlang-lsp.helloWorld`) for demonstration purposes.
-- **Compatibility**: Ensures proper integration with VS Code's command and subscription mechanisms.
-- **Syntax Highlighting**: Provides syntax highlighting for JustLang files using TextMate grammar (`syntaxes/just.tmLanguage.yaml`).
-- **Language Configuration**: Adds language configuration for JustLang files (`language-configuration.json`), including comments, brackets, and auto-closing pairs.
+
+### Language Server Features
+- **Rich Completions**: 133 built-in functions, attributes, constants, and settings with detailed documentation
+- **Hover Documentation**: Function signatures, descriptions, and version information
+- **Go-to-Definition**: Navigate to recipe and variable definitions
+- **Find References**: Find all references to recipes and variables
+- **Symbol Rename**: Rename symbols across the entire project
+- **Document Formatting**: Format Just files with proper indentation and structure
+- **Code Actions**: Quick fixes and refactoring suggestions
+
+### VSCode Integration
+- **Task Provider Integration**: Automatically detects and registers tasks from JustLang files (`Justfile`, `.justfile`, or `*.just`)
+- **Recipe Execution**: Run recipes directly from the editor with live output streaming
+- **Command Registration**: Enhanced command palette integration with recipe execution
+- **Syntax Highlighting**: Comprehensive syntax highlighting using TextMate grammar
+- **Language Configuration**: Smart bracket matching, auto-closing pairs, and comment handling
 
 ## Requirements
 
@@ -52,7 +62,10 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 
 ### Attribution
-Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
+
+**Language Server Integration**: This extension integrates with the `just-lsp` language server, which provides advanced language features including completions, hover documentation, go-to-definition, references, rename, and formatting capabilities. The language server supports 133 built-in functions, attributes, constants, and settings for comprehensive Just language support.
+
+**Syntax Highlighting**: Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
 
 ## Thanks
 * skellock

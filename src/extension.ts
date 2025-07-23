@@ -3,6 +3,7 @@ import * as path from 'path';
 import { JustTaskProvider } from './task_provider';
 import { loadCommentedJsonSafe } from './utils/json-loader';
 import { createLanguageClient } from './client';
+import { registerCommands } from './commands';
 import { LanguageClient } from 'vscode-languageclient/node';
 
 let client: LanguageClient | null;
@@ -76,6 +77,8 @@ export function activate(context: vscode.ExtensionContext) {
                     startPromise.then(() => {
                         console.log('[justlang-lsp] Language client started successfully.');
                         console.log('[justlang-lsp] Client state:', client?.state);
+                        // Register commands after client starts
+                        registerCommands(context, client);
                     }).catch((err: unknown) => {
                         const errorMessage = err instanceof Error ? err.message : String(err);
                         const errorStack = err instanceof Error ? err.stack : 'No stack trace available';

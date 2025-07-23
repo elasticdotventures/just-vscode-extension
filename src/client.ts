@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions, ErrorAction, CloseAction } from 'vscode-languageclient/node';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -82,7 +82,22 @@ export function createLanguageClient(context: vscode.ExtensionContext): Language
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ scheme: 'file', language: 'just' }],
         outputChannelName: 'Just Language Server',
-        initializationOptions: {}
+        initializationOptions: {},
+        // Enable all LSP capabilities
+        synchronize: {
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/*.{just,justfile,Justfile}')
+        },
+        // Enhanced error handling
+        errorHandler: {
+            error: (error, message, count) => {
+                console.error(`[justlang-lsp] LSP Error (${count}):`, error, message);
+                return { action: ErrorAction.Continue };
+            },
+            closed: () => {
+                console.warn('[justlang-lsp] LSP connection closed');
+                return { action: CloseAction.Restart };
+            }
+        }
     };
 
     try {
@@ -111,6 +126,18 @@ export function createLanguageClient(context: vscode.ExtensionContext): Language
 
         client.onNotification('window/showMessage', (params) => {
             console.log(`[justlang-lsp] Server message: ${params.message}`);
+        });
+
+        // Handle server-to-client commands
+        client.onRequest('workspace/executeCommand', async (params) => {
+            console.log(`[justlang-lsp] Execute command request: ${params.command}`, params.arguments);
+            try {
+                const result = await vscode.commands.executeCommand(params.command, ...(params.arguments || []));
+                return result;
+            } catch (error) {
+                console.error(`[justlang-lsp] Command execution failed:`, error);
+                throw error;
+            }
         });
         
         return client;

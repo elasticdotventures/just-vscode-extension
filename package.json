@@ -187,6 +187,16 @@
       {
         "command": "justlang.runRecipe",
         "title": "Just: Run Recipe"
+      },
+      {
+        "command": "just-lsp.run_recipe",
+        "title": "Just: Run Recipe (LSP)",
+        "category": "Just"
+      },
+      {
+        "command": "just-lsp.show_recipes",
+        "title": "Just: Show All Recipes",
+        "category": "Just"
       }
     ],
     "files": [
