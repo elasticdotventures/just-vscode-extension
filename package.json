@@ -23,7 +23,7 @@
   "contributes": {
     "languages": [
       {
-        "id": "just",
+        "id": "justlang",
         "aliases": [
           "Just",
           "just"
@@ -48,7 +48,7 @@
     ],
     "grammars": [
       {
-        "language": "just",
+        "language": "justlang",
         "scopeName": "source.just",
         "path": "./syntaxes/just.tmLanguage.json",
         "embeddedLanguages": {
