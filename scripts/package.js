@@ -18,7 +18,6 @@ if (fs.existsSync(tempDir)) {
 fs.mkdirSync(tempDir);
 
 try {
-    // 🦨 FIX: Copy all properties except scripts (and optionally devDependencies)
     const prodPkg = { ...pkg };
     prodPkg.scripts = {};
     // Optionally remove devDependencies from the package
