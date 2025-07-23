@@ -24,7 +24,7 @@
     "type": "git",
     "url": "https://github.com/elasticdotventures/justlang-lsp.git"
   },
-  "version": "0.0.26",
+  "version": "0.0.27",
   "engines": {
     "vscode": "^1.102.0"
   },
@@ -38,7 +38,10 @@
     "languages": [
       {
         "id": "justlang",
-        "aliases": ["JustLang", "justlang"],
+        "aliases": [
+          "JustLang",
+          "justlang"
+        ],
         "filenames": [],
         "extensions": [],
         "configuration": "./language-configuration.json",
@@ -49,7 +52,10 @@
       },
       {
         "id": "just",
-        "aliases": ["Just", "just"],
+        "aliases": [
+          "Just",
+          "just"
+        ],
         "filenames": [
           "justfile",
           "Justfile",
