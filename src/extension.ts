@@ -12,7 +12,19 @@ let client: LanguageClient | null;
  */
 function loadLanguageConfiguration(context: vscode.ExtensionContext): vscode.LanguageConfiguration | null {
     const configPath = path.join(context.extensionPath, 'language-configuration.json');
-    return loadCommentedJsonSafe(configPath);
+    const config = loadCommentedJsonSafe(configPath);
+    
+    if (config && config.wordPattern && typeof config.wordPattern === 'string') {
+        // Convert wordPattern string to RegExp object
+        try {
+            config.wordPattern = new RegExp(config.wordPattern);
+        } catch (error) {
+            console.warn('[justlang-lsp] Invalid wordPattern regex:', config.wordPattern, error);
+            delete config.wordPattern;
+        }
+    }
+    
+    return config;
 }
 
 // This method is called when your extension is activated
