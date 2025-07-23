@@ -77,7 +77,7 @@
       {
         "language": "justlang",
         "scopeName": "source.just",
-        "path": "syntaxes/just.tmLanguage.yaml",
+        "path": "syntaxes/just.tmLanguage.json",
         "embeddedLanguages": {
           "meta.embedded.block.js": "javascript",
           "meta.embedded.block.lua": "lua",
