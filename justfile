@@ -1,5 +1,6 @@
 # Justfile for building, testing, packaging, and installing the VSCode Justfile LSP provider
 
+
 # 🤓 export display for GUI applications, ALWAYS Use this, it is set correctly on init.
 # TODO: only set $DISPLAY if the env $env:DISPALY
 #DISPLAY:="localhost:10.0"
@@ -10,7 +11,7 @@ EXT_VER := `jq -r .version package.json`
 
 bump-patch:
     git add -u .
-    git commit -m "Bump patch version to {{EXT_VER}}"
+    git commit -m "Bump patch version v{{EXT_VER}}"
     pnpm version patch
 
 run-debug-extension:

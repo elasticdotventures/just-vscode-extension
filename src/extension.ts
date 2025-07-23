@@ -21,9 +21,23 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('[justlang-lsp] Activation event(s):', (process.env.VSCODE_NLS_CONFIG || 'unknown'));
     console.log('[justlang-lsp] Extension activation started');
 
-    // Read enableLsp setting
+    // Read settings for all subsystems
     const config = vscode.workspace.getConfiguration('justlang-lsp');
     let enableLsp = config.get<boolean>('enableLsp', true);
+    let enableJustfileWatcher = config.get<boolean>('enableJustfileWatcher', true);
+    let enableGrammar = config.get<boolean>('enableGrammar', true);
+    let enableTaskProvider = config.get<boolean>('enableTaskProvider', true);
+    let logSubsystems = config.get<boolean>('logSubsystems', false);
+
+    // VSCode OutputChannel for extension diagnostics
+    const outputChannel = vscode.window.createOutputChannel('justlang-lsp Extension');
+    const log = (...args: any[]) => {
+        if (logSubsystems) {
+            outputChannel.appendLine(args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' '));
+        }
+        // Always log to console for dev
+        console.log(...args);
+    };
 
     // Function to start the LSP client
     const startLsp = async () => {
@@ -104,25 +118,27 @@ export function activate(context: vscode.ExtensionContext) {
     // Initial LSP state
     if (enableLsp) {
         startLsp();
+        log('[justlang-lsp] LSP subsystem enabled');
+    } else {
+        log('[justlang-lsp] LSP subsystem disabled');
     }
 
-    // --- Existing JustTaskProvider and language config logic below ---
-
+    // --- JustTaskProvider and watcher subsystem ---
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (workspaceRoot) {
+    if (workspaceRoot && enableTaskProvider) {
         const justfilePath = path.join(workspaceRoot, 'Justfile');
         const dotJustfilePath = path.join(workspaceRoot, '.justfile');
         const registerProvider = () => {
-            console.log(`[justlang-lsp] Registering JustTaskProvider for workspaceRoot: ${workspaceRoot}`);
+            log(`[justlang-lsp] Registering JustTaskProvider for workspaceRoot: ${workspaceRoot}`);
             const taskProvider = new JustTaskProvider(workspaceRoot);
             const disposableTaskProvider = vscode.tasks.registerTaskProvider(JustTaskProvider.JustType, taskProvider);
             context.subscriptions.push(disposableTaskProvider);
-            console.log(`[justlang-lsp] JustTaskProvider registered with type: ${JustTaskProvider.JustType}`);
+            log(`[justlang-lsp] JustTaskProvider registered with type: ${JustTaskProvider.JustType}`);
         };
         const fs = require('fs');
         if (fs.existsSync(justfilePath) || fs.existsSync(dotJustfilePath)) {
             registerProvider();
-        } else {
+        } else if (enableJustfileWatcher) {
             // Watch for creation of Justfile or .justfile and register provider when found
             // Watch for all Justfile types, case-insensitive
             const pattern = '{[Jj]ustfile,[Jj]ustfile,[Jj]ust,[Jj]ust,.justfile,.just,*.just,*.justfile}';
@@ -134,41 +150,47 @@ export function activate(context: vscode.ExtensionContext) {
                 watcher.dispose();
             });
             context.subscriptions.push(watcher);
-            console.log('[justlang-lsp] Waiting for any Justfile variant to appear in workspace root...');
+            log('[justlang-lsp] Justfile watcher enabled, waiting for any Justfile variant to appear in workspace root...');
+        } else {
+            log('[justlang-lsp] Justfile watcher subsystem disabled');
+        }
+    } else if (!enableTaskProvider) {
+        log('[justlang-lsp] TaskProvider subsystem disabled');
+    } else {
+        log('[justlang-lsp] No workspaceRoot found, JustTaskProvider not registered');
+    }
+
+    // --- Grammar/language configuration subsystem ---
+    if (enableGrammar) {
+        // Load language configuration from language-configuration.json
+        const languageConfig = loadLanguageConfiguration(context);
+
+        // Set language configuration for Just files using the loaded configuration
+        if (languageConfig) {
+            log('😸 using languageConfig', languageConfig);
+            vscode.languages.setLanguageConfiguration('just', languageConfig);
+        } else {
+            // Fallback to hardcoded configuration if loading fails
+            log('😱 WARNING: Using basic internal language config for Just files.');
+            vscode.languages.setLanguageConfiguration('just', {
+                comments: {
+                    lineComment: '#',
+                },
+                brackets: [['(', ')']],
+                autoClosingPairs: [
+                    { open: '{', close: '}' },
+                    { open: '[', close: ']' },
+                    { open: '(', close: ')' },
+                    { open: '"', close: '"' },
+                    { open: "'", close: "'" },
+                ],
+            });
         }
     } else {
-        console.warn('[justlang-lsp] No workspaceRoot found, JustTaskProvider not registered');
+        log('[justlang-lsp] Grammar/language configuration subsystem disabled');
     }
 
-    // Load language configuration from language-configuration.json
-    const languageConfig = loadLanguageConfiguration(context);
-
-    // Set language configuration for Just files using the loaded configuration
-    if (languageConfig) {
-        console.warn('😸 using languageConfig', languageConfig);
-        vscode.languages.setLanguageConfiguration('just', languageConfig);
-    } else {
-        // Fallback to hardcoded configuration if loading fails
-        // TODO: log this fallback
-        console.warn('😱 WARNING: Using basic internal language config for Just files.');
-        vscode.languages.setLanguageConfiguration('just', {
-            comments: {
-                lineComment: '#',
-            },
-            brackets: [['(', ')']],
-            autoClosingPairs: [
-                { open: '{', close: '}' },
-                { open: '[', close: ']' },
-                { open: '(', close: ')' },
-                { open: '"', close: '"' },
-                { open: "'", close: "'" },
-            ],
-        });
-    }
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "justlang-lsp" is now active!');
+    log('Congratulations, your extension "justlang-lsp" is now active!');
 }
 
 // This method is called when your extension is deactivated

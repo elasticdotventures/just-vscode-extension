@@ -79,6 +79,26 @@
           "type": "boolean",
           "default": true,
           "description": "Enable or disable the Just LSP provider. Unchecking this will unload the LSP dynamically."
+        },
+        "justlang-lsp.enableJustfileWatcher": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the Justfile watcher subsystem."
+        },
+        "justlang-lsp.enableGrammar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the Justfile grammar/language configuration subsystem."
+        },
+        "justlang-lsp.enableTaskProvider": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the JustTaskProvider subsystem."
+        },
+        "justlang-lsp.logSubsystems": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose logging for all Just extension subsystems (LSP, watcher, grammar, task provider)."
         }
       }
     },
