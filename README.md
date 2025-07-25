@@ -37,7 +37,7 @@ Once installed, you can either add the `just-lsp` executable to your system's `P
 
 ## Development
 ### Prerequisites
-- Node.js
+- Node.js (20+)
 - TypeScript
 - PNPM
 - Rust and Cargo
@@ -47,10 +47,39 @@ Once installed, you can either add the `just-lsp` executable to your system's `P
 2. Run `pnpm install` to install dependencies.
 3. Use `pnpm run compile` to build the extension.
 
+### Development Workflow
+- **Build**: `pnpm run package` - Build for production
+- **Watch**: `pnpm run watch` - Development with hot reload
+- **Lint**: `pnpm run lint` - Code linting
+- **Type Check**: `pnpm run check-types` - TypeScript validation
+
 ### Testing
-Run `npm test` to execute the test suite.
-open a justfile
-    Developer: Inspect Editor Tokens and Scopes
+- Run `pnpm run test-local` for local testing
+- Full test suite requires VSCode Test Runner
+- Open a justfile and use "Developer: Inspect Editor Tokens and Scopes"
+
+## Release Process
+
+This project uses automated semantic versioning and releases through conventional commits.
+
+**📋 For detailed release instructions, see [RELEASE.md](./RELEASE.md)**
+
+### Quick Start
+1. **Making Commits**: `pnpm run commit` - Interactive conventional commit creation
+2. **Development**: Work on feature branches with conventional commits
+3. **Release**: Merge to `main` branch triggers automated release
+
+### Commit Types
+- `feat`: New features → minor version bump
+- `fix`: Bug fixes → patch version bump
+- `BREAKING CHANGE`: → major version bump
+
+### Automated Release Workflow
+Merging to `main` automatically:
+- Analyzes commits and determines version bump
+- Generates CHANGELOG.md
+- Creates GitHub release
+- Publishes to VSCode Marketplace & Open VSX Registry
 
 
 ## References
