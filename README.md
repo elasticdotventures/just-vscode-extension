@@ -25,7 +25,7 @@ This extension now includes a language client for the `just-lsp` language server
 
 ## Requirements
 
-This extension requires the `just-lsp` language server to be installed on your system. You can install it by following the instructions in the [just-lsp repository](https://github.com/your-repo/just-lsp).
+This extension requires the `just-lsp` language server to be installed on your system. You can install it by following the instructions in the [just-lsp repository](https://github.com/elasticdotventures/just-lsp).
 
 Once installed, you can either add the `just-lsp` executable to your system's `PATH` or specify the path to the executable in your VS Code settings using the `justlang-lsp.server.path` setting.
 

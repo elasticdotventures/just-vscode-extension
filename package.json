@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/elasticdotventures/justlang-lsp.git"
+    "url": "https://github.com/elasticdotventures/just-vscode-extension.git"
   },
   "version": "0.0.33",
   "engines": {
