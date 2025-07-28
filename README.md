@@ -98,6 +98,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 **Syntax Highlighting**: Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
 
-## Thanks
-* skellock
-* 
+## Additional Thanks 
+* Robert Neff - nefrob.vscode-just-syntax
+* skellock - skellock.just 
