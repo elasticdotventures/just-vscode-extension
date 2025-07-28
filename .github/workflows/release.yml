@@ -36,7 +36,11 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Skip scripts to avoid build issues with problematic dependencies
+          pnpm install --frozen-lockfile --ignore-scripts
+          # Then run scripts only for packages that need them, excluding the problematic one
+          pnpm rebuild --filter="!@vscode/test-cli"
 
       - name: Build extension
         run: pnpm run package

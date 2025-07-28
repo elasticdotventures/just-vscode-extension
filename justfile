@@ -93,3 +93,28 @@ release:
     @echo "🚀 Publishing to marketplace..."
     just publish
 
+# Set up GitHub secrets for automated publishing
+setup-secrets:
+    #!/bin/bash
+    echo "🔐 Setting up GitHub secrets for automated publishing..."
+    echo ""
+    echo "You'll need a VS Code Marketplace Personal Access Token (PAT):"
+    echo "1. Go to https://marketplace.visualstudio.com/manage/publishers/promptexecution"
+    echo "2. Click 'Personal Access Tokens' → 'New Token'"
+    echo "3. Name: 'GitHub Actions Release' with Full access"
+    echo "4. Copy the token when generated"
+    echo ""
+    read -p "Enter your VSCE_PAT token: " -s VSCE_PAT
+    echo ""
+    gh secret set VSCE_PAT --body "$VSCE_PAT"
+    echo "✅ VSCE_PAT secret set successfully!"
+    echo ""
+    echo "Optional: Set OVSX_PAT for Open VSX Registry:"
+    read -p "Enter OVSX_PAT (or press Enter to skip): " -s OVSX_PAT
+    if [ ! -z "$OVSX_PAT" ]; then
+        gh secret set OVSX_PAT --body "$OVSX_PAT"
+        echo "✅ OVSX_PAT secret set successfully!"
+    else
+        echo "⏭️  Skipped OVSX_PAT setup"
+    fi
+
