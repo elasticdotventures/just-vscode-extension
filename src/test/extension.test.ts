@@ -188,4 +188,10 @@ describe('😉 LSP Test Suite', () => {
 
         assert.ok(logExists, 'Debug log file should be created during tests');
     });
+
+    it('Keep VSCode open for debugging errors', async () => {
+        console.log('[justlang-lsp test] Keeping VSCode open for 10 seconds to observe errors...');
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        console.log('[justlang-lsp test] Delay complete, test finishing');
+    });
 });

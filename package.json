@@ -223,21 +223,18 @@
     ],
     "commands": [
       {
-        "command": "justlang.formatDocument",
-        "title": "Just: Format Document"
-      },
-      {
-        "command": "justlang.runRecipe",
-        "title": "Just: Run Recipe"
-      },
-      {
-        "command": "just-lsp.run_recipe",
-        "title": "Just: Run Recipe (LSP)",
+        "command": "justlang-lsp.run_recipe",
+        "title": "Just: Run Recipe",
         "category": "Just"
       },
       {
         "command": "just-lsp.show_recipes",
         "title": "Just: Show All Recipes",
+        "category": "Just"
+      },
+      {
+        "command": "just-lsp.install",
+        "title": "Just: Install/Update just-lsp Server",
         "category": "Just"
       }
     ],

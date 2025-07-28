@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, ErrorAction, CloseAction } from 'vscode-languageclient/node';
 import * as path from 'path';
 import * as fs from 'fs';
+import { JustLspInstaller } from './just-lsp-installer';
 
 function findExecutable(bin: string): string | null {
     const pathVar = process.env.PATH;
@@ -19,37 +20,30 @@ function findExecutable(bin: string): string | null {
 }
 
 // runs the justlsp binary 
-export function createLanguageClient(context: vscode.ExtensionContext): LanguageClient | null {
+export async function createLanguageClient(context: vscode.ExtensionContext): Promise<LanguageClient | null> {
     const config = vscode.workspace.getConfiguration('justlang-lsp');
+    const installer = new JustLspInstaller();
 
-    // Find the binary
-    const serverPath = config.get<string>('server.path') || findExecutable('just-lsp');
+    // Try to detect just-lsp using the new installer system
+    let serverPath = await installer.detectJustLsp();
+    
+    // If not found, prompt for installation
+    if (!serverPath) {
+        const shouldInstall = await installer.promptInstallation();
+        if (shouldInstall) {
+            // Try detection again after installation
+            serverPath = await installer.detectJustLsp();
+        }
+    }
+
+    if (!serverPath) {
+        console.error('[justlang-lsp] just-lsp binary not found after detection and installation attempts');
+        return null;
+    }
     
     // Check if debug logging is enabled (force enable during tests)
     const isTestEnvironment = process.env.NODE_ENV === 'test' || process.env.VSCODE_TEST === '1';
     const debugEnabled = isTestEnvironment || config.get<boolean>('debug.enabled', false);
-
-    // Check if the just-lsp binary is executable
-    try {
-        if (serverPath && fs.existsSync(serverPath)) {
-            fs.accessSync(serverPath, fs.constants.X_OK);
-        } else {
-            throw new Error('just-lsp binary not found');
-        }
-    } catch (err) {
-        vscode.window.showErrorMessage(
-            `just-lsp binary at ${serverPath} is not executable: ${err instanceof Error ? err.message : String(err)}`
-        );
-        console.error(`[justlang-lsp] just-lsp binary at ${serverPath} is not executable:`, err);
-        return null;
-    }
-
-    if (!serverPath) {
-        vscode.window.showErrorMessage(
-            'just-lsp executable not found. Please specify the path in your settings or ensure it is in your PATH.'
-        );
-        return null;
-    }
 
     console.log(`[justlang-lsp] Found just-lsp executable at: ${serverPath}`);
     console.log('[justlang-lsp] Preparing to launch language server process...');

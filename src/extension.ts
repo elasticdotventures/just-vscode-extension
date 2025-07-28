@@ -39,16 +39,27 @@ export function activate(context: vscode.ExtensionContext) {
             await stopLsp();
         }
         logger.info('Creating language client', 'Extension');
-        client = createLanguageClient(context);
+        client = await createLanguageClient(context);
         if (client) {
             logger.info('Language client created, starting...', 'Extension');
             try {
+                logger.info('About to call client.start()', 'Extension');
                 await client.start();
                 logger.info('Language client started successfully', 'Extension', { state: client.state });
-                registerCommands(context, client);
             } catch (err) {
-                logger.errorFromException(err, 'Language client failed to start', 'Extension');
-                vscode.window.showErrorMessage('justlang-lsp language client failed to start.');
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                const errorStack = err instanceof Error ? err.stack : 'No stack trace available';
+                logger.error('Language client failed to start', 'Extension', {
+                    error: errorMessage,
+                    stack: errorStack,
+                    clientState: client?.state
+                });
+                console.error('[justlang-lsp] DETAILED START ERROR:', {
+                    message: errorMessage,
+                    stack: errorStack,
+                    error: err
+                });
+                vscode.window.showErrorMessage(`justlang-lsp language client failed to start: ${errorMessage}`);
             }
         } else {
             logger.error('Language client creation failed', 'Extension');
@@ -78,6 +89,9 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     });
+
+    // Register commands once during activation
+    registerCommands(context, null);
 
     if (enableLsp) {
         startLsp();

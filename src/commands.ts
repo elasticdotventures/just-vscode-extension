@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
 import { RecipeRunner } from './recipe-runner';
+import { JustLspInstaller } from './just-lsp-installer';
 
 let commandsRegistered = false;
 let recipeRunner: RecipeRunner | null = null;
@@ -21,8 +22,9 @@ export function registerCommands(context: vscode.ExtensionContext, client: Langu
         return;
     }
 
-    // Register the enhanced run recipe command with JSON parsing
-    const runRecipeCommand = vscode.commands.registerCommand('just-lsp.run_recipe', async (recipeName?: string, args?: string[]) => {
+    // Register the enhanced run recipe command with JSON parsing  
+    // Note: Use different name to avoid conflict with LSP server's executeCommandProvider
+    const runRecipeCommand = vscode.commands.registerCommand('justlang-lsp.run_recipe', async (recipeName?: string, args?: string[]) => {
         const runner = getRecipeRunner();
         if (!runner) {
             vscode.window.showErrorMessage('No workspace found for recipe execution');
@@ -61,7 +63,39 @@ export function registerCommands(context: vscode.ExtensionContext, client: Langu
         }
     });
 
-    context.subscriptions.push(runRecipeCommand, showRecipesCommand);
+    // Register install just-lsp command
+    const installJustLspCommand = vscode.commands.registerCommand('just-lsp.install', async () => {
+        const installer = new JustLspInstaller();
+        
+        // First check if already installed
+        const existingPath = await installer.detectJustLsp();
+        if (existingPath) {
+            const choice = await vscode.window.showInformationMessage(
+                `just-lsp is already installed at: ${existingPath}`,
+                'Reinstall',
+                'OK'
+            );
+            if (choice !== 'Reinstall') {
+                return;
+            }
+        }
+        
+        // Attempt installation
+        const result = await installer.installJustLsp();
+        if (result.success) {
+            const choice = await vscode.window.showInformationMessage(
+                `just-lsp installed successfully at: ${result.path}`,
+                'Reload Window'
+            );
+            if (choice === 'Reload Window') {
+                vscode.commands.executeCommand('workbench.action.reloadWindow');
+            }
+        } else {
+            vscode.window.showErrorMessage(`Installation failed: ${result.error}`);
+        }
+    });
+
+    context.subscriptions.push(runRecipeCommand, showRecipesCommand, installJustLspCommand);
     commandsRegistered = true;
     console.log('[justlang-lsp] Commands registered successfully');
 }

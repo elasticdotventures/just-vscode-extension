@@ -1,9 +1,20 @@
 # JustLang-LSP Extension
 
 ## Overview
+
 JustLang-LSP is a Visual Studio Code extension designed to enhance the development experience by providing task automation and integration with JustLang syntax. It supports `Justfile` (any capitalization), `.justfile`, and `*.just` formats. This extension leverages the VS Code API to register commands and task providers, enabling seamless execution of tasks defined in JustLang files.
 
 This extension now includes a language client for the `just-lsp` language server, providing features like completion, diagnostics, and more.
+I ported my own 
+
+https://docs.pkgx.sh/
+#!/usr/bin/env -S pkgx +cargo rust-script
+https://github.com/pkgxdev/pkgx
+
+cargo install pkgx rust-script
+
+
+
 
 ## Features
 
@@ -19,9 +30,28 @@ This extension now includes a language client for the `just-lsp` language server
 ### VSCode Integration
 - **Task Provider Integration**: Automatically detects and registers tasks from JustLang files (`Justfile`, `.justfile`, or `*.just`)
 - **Recipe Execution**: Run recipes directly from the editor with live output streaming
-- **Command Registration**: Enhanced command palette integration with recipe execution
+- **Smart Command Registration**: Intelligent command handling with LSP server integration
 - **Syntax Highlighting**: Comprehensive syntax highlighting using TextMate grammar
 - **Language Configuration**: Smart bracket matching, auto-closing pairs, and comment handling
+
+#### Command System
+The extension provides two recipe execution commands:
+
+1. **LSP Server Command** (`just-lsp.run_recipe`): 
+   - Provided by the just-lsp language server
+   - Used internally for LSP protocol communication and code actions
+   - Triggered automatically by LSP server features (not directly accessible in command palette)
+
+2. **Extension Command** (`justlang-lsp.run_recipe`):
+   - Accessible via Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) → "Just: Run Recipe"
+   - Provides interactive recipe browser with descriptions and parameter prompts
+   - Shows recipe grouping, confirmation dialogs, and real-time execution output
+   - Available regardless of LSP server status
+
+**How to Access:**
+- **Command Palette**: `Ctrl+Shift+P` → "Just: Run Recipe" (uses extension command)
+- **LSP Features**: Code actions, hover actions, etc. (uses LSP server command)
+- **Task Provider**: VS Code Tasks panel (separate task-based execution)
 
 ## Requirements
 
@@ -99,5 +129,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 **Syntax Highlighting**: Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
 
 ## Additional Thanks 
+* https://github.com/terror/just-lsp (lsp)
 * Robert Neff - nefrob.vscode-just-syntax
 * skellock - skellock.just 
