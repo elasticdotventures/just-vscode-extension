@@ -46,7 +46,12 @@ jobs:
         run: pnpm run package
 
       - name: Run tests
-        run: pnpm run test
+        run: |
+          # Run local Node.js tests first
+          NODE_OPTIONS='--import=tsx' pnpm exec mocha ./src/test/language-configuration-accessibility.test.ts
+          # Then run VSCode extension host tests  
+          pnpm run compile-tests
+          DISPLAY=:99 xvfb-run -a pnpm exec vscode-test
 
       - name: Release
         env:
