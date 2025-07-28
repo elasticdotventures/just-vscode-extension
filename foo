@@ -1,0 +1,9 @@
+[2025-07-23 14:15:37 UTC] SERVER: Starting just-lsp server
+[2025-07-23 14:15:37 UTC] SERVER: Creating new server instance for client
+[2025-07-23 14:15:37 UTC] SERVER: LSP service created, starting to serve requests
+[2025-07-23 14:15:37 UTC] RAW_INPUT: Content-Length: 76
+
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}
+[2025-07-23 14:15:37 UTC] RECEIVED: initialize request with params: {"processId":null,"rootUri":null,"capabilities":{}}
+[2025-07-23 14:15:37 UTC] SENDING: initialize response: {"capabilities":{"textDocumentSync":{"openClose":true,"change":2,"save":{"includeText":false}},"hoverProvider":true,"completionProvider":{},"definitionProvider":true,"referencesProvider":true,"documentHighlightProvider":true,"codeActionProvider":true,"documentFormattingProvider":true,"renameProvider":true,"foldingRangeProvider":true,"executeCommandProvider":{"commands":["just-lsp.run_recipe"]}},"serverInfo":{"name":"just-lsp-ng","version":"0.3.1"}}
+[2025-07-23 14:15:37 UTC] SERVER: Just-lsp server stopped

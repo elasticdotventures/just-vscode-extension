@@ -1,21 +1,61 @@
 # JustLang-LSP Extension
 
 ## Overview
+
 JustLang-LSP is a Visual Studio Code extension designed to enhance the development experience by providing task automation and integration with JustLang syntax. It supports `Justfile` (any capitalization), `.justfile`, and `*.just` formats. This extension leverages the VS Code API to register commands and task providers, enabling seamless execution of tasks defined in JustLang files.
 
 This extension now includes a language client for the `just-lsp` language server, providing features like completion, diagnostics, and more.
+I ported my own 
+
+https://docs.pkgx.sh/
+#!/usr/bin/env -S pkgx +cargo rust-script
+https://github.com/pkgxdev/pkgx
+
+cargo install pkgx rust-script
+
+
+
 
 ## Features
-- **Language Server Integration**: Connects to the `just-lsp` language server for advanced language features.
-- **Task Provider Integration**: Automatically detects and registers tasks from JustLang files (`Justfile`, `.justfile`, or `*.just`).
-- **Command Registration**: Includes a sample command (`justlang-lsp.helloWorld`) for demonstration purposes.
-- **Compatibility**: Ensures proper integration with VS Code's command and subscription mechanisms.
-- **Syntax Highlighting**: Provides syntax highlighting for JustLang files using TextMate grammar (`syntaxes/just.tmLanguage.yaml`).
-- **Language Configuration**: Adds language configuration for JustLang files (`language-configuration.json`), including comments, brackets, and auto-closing pairs.
+
+### Language Server Features
+- **Rich Completions**: 133 built-in functions, attributes, constants, and settings with detailed documentation
+- **Hover Documentation**: Function signatures, descriptions, and version information
+- **Go-to-Definition**: Navigate to recipe and variable definitions
+- **Find References**: Find all references to recipes and variables
+- **Symbol Rename**: Rename symbols across the entire project
+- **Document Formatting**: Format Just files with proper indentation and structure
+- **Code Actions**: Quick fixes and refactoring suggestions
+
+### VSCode Integration
+- **Task Provider Integration**: Automatically detects and registers tasks from JustLang files (`Justfile`, `.justfile`, or `*.just`)
+- **Recipe Execution**: Run recipes directly from the editor with live output streaming
+- **Smart Command Registration**: Intelligent command handling with LSP server integration
+- **Syntax Highlighting**: Comprehensive syntax highlighting using TextMate grammar
+- **Language Configuration**: Smart bracket matching, auto-closing pairs, and comment handling
+
+#### Command System
+The extension provides two recipe execution commands:
+
+1. **LSP Server Command** (`just-lsp.run_recipe`): 
+   - Provided by the just-lsp language server
+   - Used internally for LSP protocol communication and code actions
+   - Triggered automatically by LSP server features (not directly accessible in command palette)
+
+2. **Extension Command** (`justlang-lsp.run_recipe`):
+   - Accessible via Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) → "Just: Run Recipe"
+   - Provides interactive recipe browser with descriptions and parameter prompts
+   - Shows recipe grouping, confirmation dialogs, and real-time execution output
+   - Available regardless of LSP server status
+
+**How to Access:**
+- **Command Palette**: `Ctrl+Shift+P` → "Just: Run Recipe" (uses extension command)
+- **LSP Features**: Code actions, hover actions, etc. (uses LSP server command)
+- **Task Provider**: VS Code Tasks panel (separate task-based execution)
 
 ## Requirements
 
-This extension requires the `just-lsp` language server to be installed on your system. You can install it by following the instructions in the [just-lsp repository](https://github.com/your-repo/just-lsp).
+This extension requires the `just-lsp` language server to be installed on your system. You can install it by following the instructions in the [just-lsp repository](https://github.com/elasticdotventures/just-lsp).
 
 Once installed, you can either add the `just-lsp` executable to your system's `PATH` or specify the path to the executable in your VS Code settings using the `justlang-lsp.server.path` setting.
 
@@ -27,7 +67,7 @@ Once installed, you can either add the `just-lsp` executable to your system's `P
 
 ## Development
 ### Prerequisites
-- Node.js
+- Node.js (20+)
 - TypeScript
 - PNPM
 - Rust and Cargo
@@ -37,10 +77,39 @@ Once installed, you can either add the `just-lsp` executable to your system's `P
 2. Run `pnpm install` to install dependencies.
 3. Use `pnpm run compile` to build the extension.
 
+### Development Workflow
+- **Build**: `pnpm run package` - Build for production
+- **Watch**: `pnpm run watch` - Development with hot reload
+- **Lint**: `pnpm run lint` - Code linting
+- **Type Check**: `pnpm run check-types` - TypeScript validation
+
 ### Testing
-Run `npm test` to execute the test suite.
-open a justfile
-    Developer: Inspect Editor Tokens and Scopes
+- Run `pnpm run test-local` for local testing
+- Full test suite requires VSCode Test Runner
+- Open a justfile and use "Developer: Inspect Editor Tokens and Scopes"
+
+## Release Process
+
+This project uses automated semantic versioning and releases through conventional commits.
+
+**📋 For detailed release instructions, see [RELEASE.md](./RELEASE.md)**
+
+### Quick Start
+1. **Making Commits**: `pnpm run commit` - Interactive conventional commit creation
+2. **Development**: Work on feature branches with conventional commits
+3. **Release**: Merge to `main` branch triggers automated release
+
+### Commit Types
+- `feat`: New features → minor version bump
+- `fix`: Bug fixes → patch version bump
+- `BREAKING CHANGE`: → major version bump
+
+### Automated Release Workflow
+Merging to `main` automatically:
+- Analyzes commits and determines version bump
+- Generates CHANGELOG.md
+- Creates GitHub release
+- Publishes to VSCode Marketplace & Open VSX Registry
 
 
 ## References
@@ -52,8 +121,14 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 
 ### Attribution
-Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
 
-## Thanks
-* skellock
-* 
+**Language Server Integration**: This extension integrates with the `just-lsp` language server, which provides advanced language features including completions, hover documentation, go-to-definition, references, rename, and formatting capabilities. The language server supports 133 built-in functions, attributes, constants, and settings for comprehensive Just language support.
+
+**Advanced Recipe Management & Terminal Integration**: Recipe parsing, parameter handling, terminal management, and formatting features were adapted and enhanced from the [nefrob/vscode-just](https://github.com/nefrob/vscode-just) repository under the MIT License. This includes JSON recipe parsing, interactive parameter prompts, flexible terminal execution options, and professional logging systems.
+
+**Syntax Highlighting**: Syntax highlighting and language configuration features were adapted from the [wolfmah-vscode.just-syntax](https://github.com/wolfmah-vscode/just-syntax) repository under the Mozilla Public License 2.0 (MPL 2.0). See the [LICENSE](LICENSE) file for details.
+
+## Additional Thanks 
+* https://github.com/terror/just-lsp (lsp)
+* Robert Neff - nefrob.vscode-just-syntax
+* skellock - skellock.just 

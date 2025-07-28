@@ -19,28 +19,24 @@ export class JustTaskProvider implements vscode.TaskProvider {
   }
 
   public provideTasks(): Thenable<vscode.Task[]> | undefined {
-    console.log(`[justlang-lsp debug] provideTasks() called`);
     if (!this.justPromise) {
-      console.log(`[justlang-lsp debug] Creating new justPromise`);
       this.justPromise = getJustTasks();
     }
-    this.justPromise.then(tasks => {
-      console.log(`[justlang-lsp debug] provideTasks() returning ${tasks.length} tasks:`, tasks.map(t => t.name));
-    }, err => {
-      console.error(`[justlang-lsp debug] provideTasks() error:`, err);
-    });
-    this.justPromise.then(tasks => {
-      console.log('[justlang-lsp debug] FINAL tasks returned to VSCode:', JSON.stringify(tasks, null, 2));
-    });
     return this.justPromise;
   }
 
   public resolveTask(_task: vscode.Task): vscode.Task | undefined {
     const taskName = _task.definition.task;
     if (taskName) {
-      const definition = _task.definition;
-      const commandLine = getCommandLine(definition.task, this.flakeExists ?? false);
-      return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, 'just', new vscode.ShellExecution(commandLine, { cwd: definition.dir }));
+      // resolveTask requires that the same definition object be used
+      const definition: JustTaskDefinition = _task.definition as JustTaskDefinition;
+      return new vscode.Task(
+        definition,
+        _task.scope ?? vscode.TaskScope.Workspace,
+        definition.task,
+        'just',
+        new vscode.ShellExecution(`just ${definition.task}`, { cwd: definition.dir })
+      );
     }
     return undefined;
   }
@@ -105,17 +101,13 @@ async function getJustTasks(): Promise<vscode.Task[]> {
     const foundJustfiles = justfilePatterns
       .map(pattern => glob.sync(pattern, { cwd: folderString, nocase: true }))
       .flat();
-    console.log(`[justlang-lsp debug] Found Justfile candidates:`, foundJustfiles);
     if (!foundJustfiles.length) {
       continue;
     }
 
-    const commandLine = 'just -l'; // Adjusted to support JustLang file formats
+    const commandLine = 'just -l';
     try {
-      console.log(`[justlang-lsp debug] Executing command: ${commandLine} in cwd: ${folderString}`);
       const { stdout, stderr } = await exec(commandLine, { cwd: folderString });
-      console.log(`[justlang-lsp debug] just -l stdout:\n${stdout}`);
-      console.log(`[justlang-lsp debug] just -l stderr:\n${stderr}`);
       if (stderr && stderr.length > 0) {
         getOutputChannel().appendLine(stderr);
         getOutputChannel().show(true);
@@ -125,59 +117,47 @@ async function getJustTasks(): Promise<vscode.Task[]> {
 
         const recipeLines = stdout.trim().split('\n').splice(1);
         for (const line of recipeLines) {
-          console.log('[justlang-lsp debug] Processing recipe line:', JSON.stringify(line));
           const [recipeName, docComment] = line.split('#', 2);
-          console.log('[justlang-lsp debug] recipeName:', JSON.stringify(recipeName), 'docComment:', JSON.stringify(docComment));
           const parts = recipeName ? recipeName.trim().split(' ') : [];
-          console.log('[justlang-lsp debug] parts:', JSON.stringify(parts));
           const taskName = parts[0];
-          console.log('[justlang-lsp debug] taskName:', JSON.stringify(taskName));
           const taskDetail = docComment?.trim();
-          // Construct a plain object with only allowed keys
-          const definition = Object.assign(Object.create(null), {
+          
+          // Create simple task definition following VSCode docs pattern
+          const definition = {
+            type: 'just',
             task: taskName,
-            dir: folderString,
-            promptForArgs: parts.length > 1,
-            flakeExists
-          }) as JustTaskDefinition;
-          // Assign to a group if the name matches common groups, else use custom group
-          let group: vscode.TaskGroup | string | undefined = undefined;
-          if (taskName === 'build') {
-              group = vscode.TaskGroup.Build;
-          } else if (taskName === 'test') {
-              group = vscode.TaskGroup.Test;
-          } else if (taskName === 'clean') {
-              group = vscode.TaskGroup.Clean;
-          } else if (taskName === 'rebuild') {
-              group = vscode.TaskGroup.Rebuild;
-          } else {
-              group = 'just';
-          }
+            dir: folderString
+          };
+          
+          // Create task following the official VSCode docs pattern exactly
           const task = new vscode.Task(
             definition,
             workspaceFolder,
             taskName,
             'just',
-            getExecution(definition)
+            new vscode.ShellExecution(`just ${taskName}`, { cwd: folderString })
           );
-          if (group) {
-            (task as any).group = group;
+          
+          // Set detail for documentation
+          if (taskDetail) {
+            task.detail = taskDetail;
           }
-          task.detail = taskDetail;
-          console.log(`[justlang-lsp debug] Creating task:`, {
-            name: taskName,
-            type: (task as any).definition?.type || 'unknown',
-            detail: taskDetail,
-            definition,
-            definitionKeys: Object.keys(definition),
-            taskType: (task as any).type,
-            taskSource: (task as any).source
-          });
+          
+          // Only assign groups for specific well-known task names, following best practices
+          if (taskName === 'build') {
+            task.group = vscode.TaskGroup.Build;
+          } else if (taskName === 'test') {
+            task.group = vscode.TaskGroup.Test;
+          } else if (taskName === 'clean') {
+            task.group = vscode.TaskGroup.Clean;
+          } else if (taskName === 'rebuild') {
+            task.group = vscode.TaskGroup.Rebuild;
+          }
+          // For other tasks, don't assign a group - let them appear under the task type
           result.push(task);
         }
       }
     } catch (err: any) {
-      console.error(`[justlang-lsp debug] Error executing just -l:`, err);
       const channel = getOutputChannel();
       if (err.stderr) {
         channel.appendLine(err.stderr);
@@ -189,7 +169,6 @@ async function getJustTasks(): Promise<vscode.Task[]> {
       channel.show(true);
     }
   }
-  console.log(`[justlang-lsp debug] getJustTasks() returning ${result.length} tasks total`);
   return result;
 }
 
@@ -216,10 +195,9 @@ function getOutputChannel(): vscode.OutputChannel {
 let _channel: vscode.OutputChannel;
 
 interface JustTaskDefinition extends vscode.TaskDefinition {
+  type: 'just';
   task: string;
   dir: string;
-  promptForArgs: boolean;
-  flakeExists: boolean;
 }
 
 enum UseNix {

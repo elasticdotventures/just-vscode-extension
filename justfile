@@ -76,3 +76,20 @@ install:
 package-install:
     {{VSCODE}} --install-extension ./justlang-lsp-{{EXT_VER}}.vsix
 
+# Publish the packaged extension to VS Code Marketplace
+publish:
+    #!/bin/bash
+    # First ensure we have the latest package
+    just package-check
+    VSIX_FILE="./justlang-lsp-{{EXT_VER}}.vsix"
+    echo "🚀 Publishing $VSIX_FILE to VS Code Marketplace..."
+    pnpm exec vsce publish --packagePath "$VSIX_FILE"
+    echo "✅ Published version {{EXT_VER}} successfully!"
+
+# Package and publish in one step
+release:
+    @echo "🔨 Building and packaging extension..."
+    just package
+    @echo "🚀 Publishing to marketplace..."
+    just publish
+

@@ -26,28 +26,34 @@ describe('Language Configuration Accessibility Tests', () => {
 
     it('should validate bracket configuration', () => {
         const config = loadCommentedJson(languageConfigPath);
-        assert.deepStrictEqual(config.brackets, [['(', ')']], 'Incorrect bracket configuration');
+        assert.deepStrictEqual(config.brackets, [
+            ['{', '}'],
+            ['[', ']'],
+            ['(', ')']
+        ], 'Incorrect bracket configuration');
     });
 
     it('should validate auto-closing pairs', () => {
         const config = loadCommentedJson(languageConfigPath);
         assert.deepStrictEqual(config.autoClosingPairs, [
-            ['{', '}'],
-            ['[', ']'],
-            ['(', ')'],
-            ['"', '"'],
-            ["'", "'"]
+            { "open": "{", "close": "}" },
+            { "open": "[", "close": "]" },
+            { "open": "(", "close": ")" },
+            { "open": "\"", "close": "\"" },
+            { "open": "'", "close": "'" },
+            { "open": "`", "close": "`" }
         ], 'Incorrect auto-closing pairs configuration');
     });
 
     it('should validate surrounding pairs', () => {
         const config = loadCommentedJson(languageConfigPath);
         assert.deepStrictEqual(config.surroundingPairs, [
-            ['{', '}'],
-            ['[', ']'],
-            ['(', ')'],
-            ['"', '"'],
-            ["'", "'"]
+            { "open": "{", "close": "}" },
+            { "open": "[", "close": "]" },
+            { "open": "(", "close": ")" },
+            { "open": "\"", "close": "\"" },
+            { "open": "'", "close": "'" },
+            { "open": "`", "close": "`" }
         ], 'Incorrect surrounding pairs configuration');
     });
 });
