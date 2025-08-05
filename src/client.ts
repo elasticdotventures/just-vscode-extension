@@ -85,10 +85,18 @@ export async function createLanguageClient(context: vscode.ExtensionContext): Pr
         errorHandler: {
             error: (error, message, count) => {
                 console.error(`[justlang-lsp] LSP Error (${count}):`, error, message);
+                vscode.window.showErrorMessage(`Just LSP Error: ${error?.message || error}`);
+                
+                // After 3 errors, try to restart
+                if (count !== undefined && count >= 3) {
+                    console.warn('[justlang-lsp] Too many errors, attempting restart');
+                    return { action: ErrorAction.Shutdown };
+                }
                 return { action: ErrorAction.Continue };
             },
             closed: () => {
-                console.warn('[justlang-lsp] LSP connection closed');
+                console.warn('[justlang-lsp] LSP connection closed unexpectedly');
+                vscode.window.showWarningMessage('Just Language Server connection closed, attempting restart...');
                 return { action: CloseAction.Restart };
             }
         }
@@ -120,6 +128,15 @@ export async function createLanguageClient(context: vscode.ExtensionContext): Pr
 
         client.onNotification('window/showMessage', (params) => {
             console.log(`[justlang-lsp] Server message: ${params.message}`);
+        });
+
+        // Monitor diagnostics to ensure they're being published
+        client.onNotification('textDocument/publishDiagnostics', (params) => {
+            console.log(`[justlang-lsp] Publishing diagnostics for ${params.uri}: ${params.diagnostics.length} issues`);
+            if (params.diagnostics.length > 0) {
+                // Show Problems panel when diagnostics are published
+                vscode.commands.executeCommand('workbench.action.problems.focus');
+            }
         });
 
         // Handle server-to-client commands
