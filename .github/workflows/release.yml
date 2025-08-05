@@ -35,15 +35,8 @@ jobs:
         with:
           version: latest
 
-      - name: Install just
-        run: |
-          JUST_VERSION="1.42.4"
-          ARCH="x86_64-unknown-linux-musl"
-          wget -O just.tar.gz "https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${ARCH}.tar.gz"
-          tar -xzf just.tar.gz
-          chmod +x just
-          sudo mv just /usr/local/bin/just
-          just --version
+      - name: Setup just
+        uses: extractions/setup-just@v2
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -66,3 +59,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: pnpm run release
+
+      - name: Publish to VS Code Marketplace
+        uses: lannonbr/vsce-action@4.0.0
+        with:
+          args: "publish --packagePath justlang-lsp-*.vsix"
+        env:
+          VSCE_TOKEN: ${{ secrets.VSCE_PAT }}

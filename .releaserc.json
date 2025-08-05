@@ -10,11 +10,20 @@
       }
     ],
     [
-      "semantic-release-vsce",
+      "@semantic-release/npm",
       {
-        "packageVsix": false,
-        "publishVsix": true,
-        "publishOpenVSX": false
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "justlang-lsp-*.vsix",
+            "label": "VSCode Extension Package"
+          }
+        ]
       }
     ],
     [
