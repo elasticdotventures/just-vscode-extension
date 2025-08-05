@@ -95,6 +95,23 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (enableLsp) {
         startLsp();
+        
+        // Watch for Justfile changes and restart LSP if needed
+        const justfileWatcher = vscode.workspace.createFileSystemWatcher('**/*.{just,justfile,Justfile}');
+        
+        const restartLspOnFileChange = async () => {
+            if (client) {
+                logger.info('Justfile changed, restarting LSP client', 'Extension');
+                await stopLsp();
+                await startLsp();
+            }
+        };
+        
+        justfileWatcher.onDidChange(restartLspOnFileChange);
+        justfileWatcher.onDidCreate(restartLspOnFileChange);
+        justfileWatcher.onDidDelete(restartLspOnFileChange);
+        
+        context.subscriptions.push(justfileWatcher);
     } else {
         logger.info('LSP subsystem disabled by configuration', 'Extension');
     }
