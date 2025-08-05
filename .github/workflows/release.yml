@@ -35,11 +35,21 @@ jobs:
         with:
           version: latest
 
+      - name: Install just
+        run: |
+          JUST_VERSION="1.42.4"
+          ARCH="x86_64-unknown-linux-musl"
+          wget -O just.tar.gz "https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${ARCH}.tar.gz"
+          tar -xzf just.tar.gz
+          chmod +x just
+          sudo mv just /usr/local/bin/just
+          just --version
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build extension
-        run: pnpm run package
+        run: just package
 
       - name: Run tests
         run: |

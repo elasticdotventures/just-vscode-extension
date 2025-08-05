@@ -12,7 +12,7 @@
     [
       "semantic-release-vsce",
       {
-        "packageVsix": true,
+        "packageVsix": false,
         "publishVsix": true,
         "publishOpenVSX": false
       }
