@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.1...v1.0.2) (2025-08-05)
+
+
+### Bug Fixes
+
+* replace VSCE GitHub Action with direct vsce publish command ([abbf5fe](https://github.com/elasticdotventures/just-vscode-extension/commit/abbf5febb96bb066c7152a6c6eee9a1f855a348a))
+
 ## [1.0.1](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.0...v1.0.1) (2025-08-05)
 
 
