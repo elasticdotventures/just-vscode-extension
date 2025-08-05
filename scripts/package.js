@@ -66,7 +66,9 @@ try {
     console.log('🔨 Running vsce package...');
     const outputPath = path.resolve(outputFile);
     
-    execSync(`pnpm exec vsce package --out "${outputPath}"`, {
+    // Use vsce from the parent directory's node_modules
+    const vscePath = path.resolve('./node_modules/.bin/vsce');
+    execSync(`"${vscePath}" package --out "${outputPath}"`, {
         cwd: tempDir,
         stdio: 'inherit'
     });
