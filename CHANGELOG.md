@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.0...v1.0.1) (2025-08-05)
+
+
+### Bug Fixes
+
+* revert version to 0.0.35 for proper marketplace publishing ([c888574](https://github.com/elasticdotventures/just-vscode-extension/commit/c888574e724e07019e2a441925943d8962bb0b49))
+
 # 1.0.0 (2025-08-05)
 
 
