@@ -61,8 +61,8 @@ jobs:
         run: pnpm run release
 
       - name: Publish to VS Code Marketplace
-        uses: lannonbr/vsce-action@4.0.0
-        with:
-          args: "publish --packagePath justlang-lsp-*.vsix"
         env:
-          VSCE_TOKEN: ${{ secrets.VSCE_PAT }}
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          echo "Publishing VSIX package to marketplace..."
+          pnpm exec vsce publish --packagePath justlang-lsp-*.vsix --pat $VSCE_PAT
