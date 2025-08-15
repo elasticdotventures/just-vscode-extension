@@ -12,3 +12,4 @@ scripts/read-*.ts
 scripts/test-*.js
 *.ignore
 ._b00t_.toml
+.claude/*

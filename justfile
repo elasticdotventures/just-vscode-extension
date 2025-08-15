@@ -11,7 +11,7 @@ EXT_VER := `jq -r .version package.json`
 
 bump-patch:
     git add -u .
-    git commit -m "Bump patch version v{{EXT_VER}}"
+    git commit -m "ci: Bump patch version v{{EXT_VER}}"
     pnpm version patch
 
 run-debug-extension:
