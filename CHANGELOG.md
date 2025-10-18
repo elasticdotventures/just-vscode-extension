@@ -1,3 +1,21 @@
+## [1.0.5](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.4...v1.0.5) (2025-10-18)
+
+### Features
+
+- add winget support to automatically install Rust/Cargo on Windows when missing ([just-lsp-installer.ts:259](https://github.com/elasticdotventures/just-vscode-extension/blob/main/src/just-lsp-installer.ts#L259))
+- improve manual installation instructions with platform-specific guidance including winget commands
+
+### Bug Fixes
+
+- fix Windows PowerShell compatibility in just-lsp installer ([just-lsp-installer.ts:184](https://github.com/elasticdotventures/just-vscode-extension/blob/main/src/just-lsp-installer.ts#L184))
+- improve executable detection on Windows to check file extensions instead of Unix permissions
+- enhance cargo installation with proper Windows command handling (cargo.exe)
+- add detailed error logging to identify which installation methods fail
+- improve PATH search to handle both with and without .exe extensions on Windows
+- clarify distinction between just-lsp (language server) and just (command runner) in installation prompts
+
+## [1.0.4](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.3...v1.0.4) (2025-10-18)
+
 ## [1.0.3](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.2...v1.0.3) (2025-08-15)
 
 ### Bug Fixes
