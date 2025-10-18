@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.2...v1.0.3) (2025-10-18)
+
+
+### Bug Fixes
+
+* improve Windows installation support for just-lsp ([aaad994](https://github.com/elasticdotventures/just-vscode-extension/commit/aaad99480cf008a3eb3ead4474263500c36dcfae))
+* remove automatic Problems panel focus while typing ([6db5b7b](https://github.com/elasticdotventures/just-vscode-extension/commit/6db5b7b09fe42e0a298f1a21a22c7b8c15a39202))
+
 ## [1.0.5](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.4...v1.0.5) (2025-10-18)
 
 ### Features
