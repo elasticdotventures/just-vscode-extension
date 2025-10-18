@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.3...v1.0.4) (2025-10-18)
+
+
+### Bug Fixes
+
+* detect and install Visual Studio Build Tools for Rust on Windows ([6f8e1d2](https://github.com/elasticdotventures/just-vscode-extension/commit/6f8e1d2392fe17a0de825fd8a2adc0ffffaf174f))
+
 ## [1.0.3](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.2...v1.0.3) (2025-10-18)
 
 
