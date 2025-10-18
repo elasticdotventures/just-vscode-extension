@@ -11,7 +11,8 @@
 ### Features
 
 - add winget support to automatically install Rust/Cargo on Windows when missing ([just-lsp-installer.ts:259](https://github.com/elasticdotventures/just-vscode-extension/blob/main/src/just-lsp-installer.ts#L259))
-- improve manual installation instructions with platform-specific guidance including winget commands
+- detect missing Visual Studio Build Tools and offer automatic installation via winget
+- improve manual installation instructions with platform-specific guidance including build tools prerequisites
 
 ### Bug Fixes
 

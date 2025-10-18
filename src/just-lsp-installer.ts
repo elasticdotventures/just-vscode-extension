@@ -385,6 +385,58 @@ export class JustLspInstaller {
         } catch (error) {
             const errorMsg = error instanceof Error ? error.message : String(error);
             logger.errorFromException(error, 'Cargo installation failed', 'JustLspInstaller');
+
+            // Check if this is a linker error indicating missing Visual Studio Build Tools
+            if (errorMsg.includes('link.exe') && errorMsg.includes('Visual Studio build tools')) {
+                if (process.platform === 'win32') {
+                    const choice = await vscode.window.showErrorMessage(
+                        'Rust compilation requires Visual Studio Build Tools with C++ support. Would you like to install them?',
+                        'Install Build Tools',
+                        'Manual Instructions',
+                        'Cancel'
+                    );
+
+                    if (choice === 'Install Build Tools') {
+                        try {
+                            // Try using winget to install Visual Studio Build Tools
+                            await asyncExec('winget install --id Microsoft.VisualStudio.2022.BuildTools --accept-source-agreements --accept-package-agreements', {
+                                timeout: 600000 // 10 minutes
+                            });
+
+                            vscode.window.showInformationMessage(
+                                'Visual Studio Build Tools installed. Please restart VS Code and try installing just-lsp again.',
+                                'Reload Window'
+                            ).then(choice => {
+                                if (choice === 'Reload Window') {
+                                    vscode.commands.executeCommand('workbench.action.reloadWindow');
+                                }
+                            });
+
+                            return {
+                                success: false,
+                                error: 'Visual Studio Build Tools installed. Please reload VS Code and retry installation.'
+                            };
+                        } catch (installError) {
+                            vscode.window.showErrorMessage(
+                                'Failed to install Build Tools automatically. Please install manually.',
+                                'Open Instructions'
+                            ).then(choice => {
+                                if (choice === 'Open Instructions') {
+                                    vscode.env.openExternal(vscode.Uri.parse('https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022'));
+                                }
+                            });
+                        }
+                    } else if (choice === 'Manual Instructions') {
+                        vscode.env.openExternal(vscode.Uri.parse('https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022'));
+                    }
+                }
+
+                return {
+                    success: false,
+                    error: 'Missing Visual Studio Build Tools with C++ support. Required for compiling Rust programs on Windows.'
+                };
+            }
+
             return {
                 success: false,
                 error: `Cargo installation failed: ${errorMsg}`
@@ -418,6 +470,19 @@ export class JustLspInstaller {
         if (isWindows) {
             instructions += `
 ## Windows Installation
+
+### Prerequisites
+**IMPORTANT**: Rust on Windows requires Visual Studio Build Tools with C++ support.
+
+Install build tools:
+\`\`\`powershell
+# Option A: Install via winget
+winget install Microsoft.VisualStudio.2022.BuildTools
+
+# Option B: Download manually from:
+# https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022
+# Make sure to select "Desktop development with C++" workload
+\`\`\`
 
 ### Option 1: Install with Cargo (Recommended)
 \`\`\`powershell
