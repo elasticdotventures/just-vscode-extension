@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.4...v1.0.5) (2025-10-19)
+
+
+### Bug Fixes
+
+* detect and handle wrong link.exe on Windows ([1817bb7](https://github.com/elasticdotventures/just-vscode-extension/commit/1817bb77e04f4f88eab7fefc9a0287b8bc8ebf77))
+
 ## [1.0.4](https://github.com/elasticdotventures/just-vscode-extension/compare/v1.0.3...v1.0.4) (2025-10-18)
 
 
