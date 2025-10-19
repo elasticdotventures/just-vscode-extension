@@ -224,6 +224,80 @@ export class JustLspInstaller {
         }
     }
 
+    /**
+     * Check if the correct linker is first in PATH on Windows
+     * Returns information about potential PATH issues
+     */
+    private async checkWindowsLinker(): Promise<{isCorrect: boolean, message: string, linkPath?: string}> {
+        if (process.platform !== 'win32') {
+            return { isCorrect: true, message: 'Not Windows' };
+        }
+
+        try {
+            // Use where.exe to find all link.exe in PATH
+            const { stdout } = await asyncExec('where.exe link.exe');
+            const linkPaths = stdout.trim().split('\n').map(p => p.trim()).filter(p => p);
+
+            if (linkPaths.length === 0) {
+                return {
+                    isCorrect: false,
+                    message: 'No link.exe found in PATH. Visual Studio Build Tools may not be installed.'
+                };
+            }
+
+            const firstLink = linkPaths[0].toLowerCase();
+            logger.info(`First link.exe in PATH: ${firstLink}`, 'JustLspInstaller');
+
+            // Check if the first link.exe is from a Unix-like environment
+            const unixToolPaths = [
+                '\\git\\',
+                '\\msys',
+                '\\cygwin',
+                '\\mingw',
+                '\\usr\\bin',
+            ];
+
+            const isUnixLink = unixToolPaths.some(unixPath => firstLink.includes(unixPath.toLowerCase()));
+
+            if (isUnixLink) {
+                return {
+                    isCorrect: false,
+                    message: `Found Unix 'link' command before MSVC linker in PATH: ${firstLink}`,
+                    linkPath: firstLink
+                };
+            }
+
+            // Check if it's the MSVC linker
+            const isMsvcLink = firstLink.includes('microsoft visual studio') ||
+                               firstLink.includes('\\vc\\tools\\') ||
+                               firstLink.includes('\\msvc\\');
+
+            if (isMsvcLink) {
+                logger.info('Correct MSVC linker found first in PATH', 'JustLspInstaller');
+                return {
+                    isCorrect: true,
+                    message: 'MSVC linker correctly positioned in PATH',
+                    linkPath: firstLink
+                };
+            }
+
+            // Unknown link.exe - could be problematic
+            return {
+                isCorrect: false,
+                message: `Unknown link.exe found first in PATH: ${firstLink}. Expected MSVC linker.`,
+                linkPath: firstLink
+            };
+
+        } catch (error) {
+            // where.exe failed - likely no link.exe in PATH
+            logger.warning('Failed to check for link.exe in PATH', 'JustLspInstaller');
+            return {
+                isCorrect: false,
+                message: 'Could not find link.exe in PATH. Visual Studio Build Tools may not be installed or not in PATH.'
+            };
+        }
+    }
+
     private async installFromLocalBuild(progress: vscode.Progress<{message?: string}>): Promise<InstallationResult> {
         progress.report({ message: 'Building from local source...' });
         
@@ -345,6 +419,35 @@ export class JustLspInstaller {
             const { stdout: cargoVersion } = await asyncExec(cargoCheckCmd);
             logger.info(`Found cargo: ${cargoVersion.trim()}`, 'JustLspInstaller');
 
+            // On Windows, proactively check for the wrong linker issue
+            if (process.platform === 'win32') {
+                const linkerCheck = await this.checkWindowsLinker();
+                if (!linkerCheck.isCorrect) {
+                    logger.warning('Wrong linker detected in PATH', 'JustLspInstaller');
+
+                    const choice = await vscode.window.showWarningMessage(
+                        `Potential PATH issue detected: ${linkerCheck.message}\n\nThis will likely cause cargo install to fail. Would you like to see instructions to fix this first?`,
+                        'Show Fix Instructions',
+                        'Try Anyway',
+                        'Cancel'
+                    );
+
+                    if (choice === 'Show Fix Instructions') {
+                        this.showWrongLinkerInstructions();
+                        return {
+                            success: false,
+                            error: 'Installation cancelled - user chose to fix PATH issue first'
+                        };
+                    } else if (choice === 'Cancel') {
+                        return {
+                            success: false,
+                            error: 'Installation cancelled by user'
+                        };
+                    }
+                    // If "Try Anyway", continue with installation
+                }
+            }
+
             // Install just-lsp (this will install the original just-lsp from crates.io)
             progress.report({ message: 'Running cargo install just-lsp (this may take several minutes)...' });
             logger.info('Running cargo install just-lsp...', 'JustLspInstaller');
@@ -386,7 +489,71 @@ export class JustLspInstaller {
             const errorMsg = error instanceof Error ? error.message : String(error);
             logger.errorFromException(error, 'Cargo installation failed', 'JustLspInstaller');
 
-            // Check if this is a linker error indicating missing Visual Studio Build Tools
+            // Check if this is the "wrong link.exe" problem (GNU coreutils link instead of MSVC linker)
+            if (errorMsg.includes('link.exe') && errorMsg.includes('extra operand')) {
+                if (process.platform === 'win32') {
+                    const message = `Rust compilation failed: The wrong 'link.exe' is being used.
+
+This happens when Unix tools (Git for Windows, MSYS2, etc.) are in your PATH before the MSVC linker.
+
+To fix this:
+1. Install Visual Studio Build Tools with C++ support
+2. Ensure the MSVC linker is found before Unix tools in your PATH
+
+Would you like to see detailed instructions?`;
+
+                    const choice = await vscode.window.showErrorMessage(
+                        message,
+                        'Show Instructions',
+                        'Try Installing Build Tools',
+                        'Cancel'
+                    );
+
+                    if (choice === 'Show Instructions') {
+                        this.showWrongLinkerInstructions();
+                    } else if (choice === 'Try Installing Build Tools') {
+                        try {
+                            progress.report({ message: 'Installing Visual Studio Build Tools...' });
+                            await asyncExec('winget install --id Microsoft.VisualStudio.2022.BuildTools --override "--quiet --wait --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended" --accept-source-agreements --accept-package-agreements', {
+                                timeout: 900000 // 15 minutes
+                            });
+
+                            vscode.window.showInformationMessage(
+                                'Visual Studio Build Tools installed. You may need to restart your computer, then reload VS Code.',
+                                'Reload Window',
+                                'Show PATH Fix Instructions'
+                            ).then(choice => {
+                                if (choice === 'Reload Window') {
+                                    vscode.commands.executeCommand('workbench.action.reloadWindow');
+                                } else if (choice === 'Show PATH Fix Instructions') {
+                                    this.showWrongLinkerInstructions();
+                                }
+                            });
+
+                            return {
+                                success: false,
+                                error: 'Visual Studio Build Tools installed. Please restart your computer and reload VS Code, then check PATH ordering.'
+                            };
+                        } catch (installError) {
+                            vscode.window.showErrorMessage(
+                                'Failed to install Build Tools automatically. Please install manually.',
+                                'Show Instructions'
+                            ).then(choice => {
+                                if (choice === 'Show Instructions') {
+                                    this.showWrongLinkerInstructions();
+                                }
+                            });
+                        }
+                    }
+
+                    return {
+                        success: false,
+                        error: 'Wrong link.exe detected (GNU coreutils instead of MSVC linker). Visual Studio Build Tools required and PATH must be configured correctly.'
+                    };
+                }
+            }
+
+            // Check if this is a generic linker error indicating missing Visual Studio Build Tools
             if (errorMsg.includes('link.exe') && errorMsg.includes('Visual Studio build tools')) {
                 if (process.platform === 'win32') {
                     const choice = await vscode.window.showErrorMessage(
@@ -398,9 +565,10 @@ export class JustLspInstaller {
 
                     if (choice === 'Install Build Tools') {
                         try {
-                            // Try using winget to install Visual Studio Build Tools
-                            await asyncExec('winget install --id Microsoft.VisualStudio.2022.BuildTools --accept-source-agreements --accept-package-agreements', {
-                                timeout: 600000 // 10 minutes
+                            progress.report({ message: 'Installing Visual Studio Build Tools...' });
+                            // Install with C++ workload explicitly
+                            await asyncExec('winget install --id Microsoft.VisualStudio.2022.BuildTools --override "--quiet --wait --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended" --accept-source-agreements --accept-package-agreements', {
+                                timeout: 900000 // 15 minutes
                             });
 
                             vscode.window.showInformationMessage(
@@ -455,6 +623,90 @@ export class JustLspInstaller {
         };
     }
 
+
+    private showWrongLinkerInstructions(): void {
+        const instructions = `# Fixing the "Wrong link.exe" Error on Windows
+
+## Problem
+Rust is trying to use the GNU coreutils \`link\` command (from Git for Windows, MSYS2, etc.) instead of the Microsoft Visual C++ linker (\`link.exe\`) that it needs.
+
+This error looks like:
+\`\`\`
+link: extra operand 'C:\\Users\\...\\something.o'
+Try 'link --help' for more information.
+\`\`\`
+
+## Solution
+
+### Step 1: Install Visual Studio Build Tools
+1. Open PowerShell as Administrator
+2. Run:
+   \`\`\`powershell
+   winget install --id Microsoft.VisualStudio.2022.BuildTools --override "--quiet --wait --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended"
+   \`\`\`
+3. **Restart your computer** after installation completes
+
+### Step 2: Fix Your PATH (Choose One Method)
+
+#### Method A: Use the Visual Studio Developer Command Prompt
+- Launch "Developer Command Prompt for VS 2022" or "Developer PowerShell for VS 2022"
+- This automatically sets up the correct PATH
+- Install just-lsp from there:
+  \`\`\`powershell
+  cargo install just-lsp
+  \`\`\`
+
+#### Method B: Reorder Your System PATH
+1. Open System Environment Variables:
+   - Press Win+R, type \`sysdm.cpl\`, press Enter
+   - Click "Advanced" tab → "Environment Variables"
+2. In "System variables", find and edit "Path"
+3. Move these entries to the **top** (before Git, MSYS2, etc.):
+   \`\`\`
+   C:\\Program Files\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\<version>\\bin\\Hostx64\\x64
+   C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\<version>\\bin\\Hostx64\\x64
+   \`\`\`
+   (The exact path depends on your Visual Studio version)
+4. **Restart your computer** for PATH changes to take effect
+
+#### Method C: Use rustup's MSVC toolchain explicitly
+\`\`\`powershell
+rustup default stable-x86_64-pc-windows-msvc
+cargo install just-lsp
+\`\`\`
+
+### Step 3: Verify the Fix
+Open a new PowerShell window and run:
+\`\`\`powershell
+where.exe link
+\`\`\`
+
+The **first** result should be the MSVC linker, something like:
+\`\`\`
+C:\\Program Files\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\...\\link.exe
+\`\`\`
+
+NOT:
+\`\`\`
+C:\\Program Files\\Git\\usr\\bin\\link.exe
+\`\`\`
+
+### Step 4: Retry Installation
+Once the PATH is fixed, try installing just-lsp again:
+\`\`\`powershell
+cargo install just-lsp
+\`\`\`
+
+## Additional Resources
+- [Visual Studio Build Tools Download](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
+- [Rust Windows Prerequisites](https://rust-lang.github.io/rustup/installation/windows.html)
+`;
+
+        vscode.workspace.openTextDocument({
+            content: instructions,
+            language: 'markdown'
+        }).then(doc => vscode.window.showTextDocument(doc));
+    }
 
     private showManualInstallationInstructions(): void {
         const isWindows = process.platform === 'win32';
